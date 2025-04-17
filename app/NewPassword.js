@@ -31,7 +31,7 @@ export default function NewPassword() {
     }
 
     show({
-      title: "Tu nueva contraseña, fue guardada con éxito!",
+      title: "¡Tu nueva contraseña, fue guardada con éxito!",
       route: "Login",
     });
   };
@@ -47,12 +47,12 @@ export default function NewPassword() {
           className="w-[200px] mb-16"
         />
         <StyledText className="text-2xl font-bold text-white text-start mb-2">
-          Le hemos enviado a su correo, un código que necesitamos que introduzca
+        ¡Revisa tu correo electrónico e introduce el código
           para continuar!
         </StyledText>
 
         <StyledText className="text-base text-gray-400 text-start mb-8">
-          Solo falta un paso más dasdasd
+        Último paso
         </StyledText>
 
         <Input

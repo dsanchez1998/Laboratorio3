@@ -31,8 +31,7 @@ export default function RecoverPasswordCode() {
           className="w-[200px] mb-16"
         />
         <StyledText className="text-2xl font-bold text-white text-start mb-2">
-          Le hemos enviado a su correo, un código que necesitamos que introduzca
-          para continuar!
+        ¡Revisa tu correo electrónico e introduce el código para continuar!
         </StyledText>
 
         <StyledText className="text-base text-gray-400 text-start mb-8">

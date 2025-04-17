@@ -35,10 +35,10 @@ export default function RecoverPassword() {
           Olvidó su contraseña?
         </StyledText>
         <StyledText className="text-base text-gray-400 mb-8">
-          No te preocupes, ya lo vamos a solucionar!
+        ¡No te preocupes, ya lo solucionamos!
         </StyledText>
         <Input
-          placeholder="Ingresa tu correo"
+          placeholder="Ingresa tu correo electrónico"
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"

@@ -80,7 +80,7 @@ export default function Register() {
             />
           </StyledView>
           <StyledText className="text-gray-400 text-sm">
-            I agree to the Privacy Policy and Terms of Service
+          Acepto la Política de privacidad y los Términos de servicio.
           </StyledText>
         </StyledView>
       </StyledView>

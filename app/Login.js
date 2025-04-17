@@ -34,16 +34,16 @@ export default function Login() {
           Inicia sesión con tu cuenta
         </StyledText>
         <StyledText className="text-base text-gray-400 mb-8">
-        ¡Únete a nosotros y explora nuevas posibilidades!
+        ¡Únete a nosotras y explora nuevas posibilidades!
         </StyledText>
         <Input
-          placeholder="Correo electrónico"
+          placeholder="Ingresa tu correo electrónico"
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
         />
         <Input
-          placeholder="Contraseña"
+          placeholder="Ingresa tu Contraseña"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
@@ -59,14 +59,15 @@ export default function Login() {
 
         <Button text="Iniciar Sesión" onPress={handleLogin} />
         <StyledText className="text-base text-gray-400 mt-8 mb-2">
-          ¿Aún no tienes una cuenta?
+          ¿Aún No tienes una cuenta?
         </StyledText>
         <StyledText
-          onPress={() => console.log("registrarse")}
+          onPress={() => navigation.navigate("Register")}
           className="text-[#37C2EB] mb-8"
         >
           Regístrate aquí
         </StyledText>
+  
       </StyledView>
     </ImageBackground>
   );
