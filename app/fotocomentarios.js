@@ -14,21 +14,24 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from "@react-navigation/native";
 
-const Navbar = () => (
+const Navbar = () => {
+ const navigation = useNavigation();
 
-  
- 
+ return(
   <View style={styles.navbarContainer}>
     <View style={styles.topBar}>
-      <Text style={styles.logo}>More</Text>
-      <Icon name="comment" size={24} color="white" />
+    <Text style={styles.logo}>More</Text>
+     <TouchableOpacity onPress={() => navigation.navigate("Chats")}>
+     < Icon name="comment" size={24} color="white" />
+     </TouchableOpacity>
+     
     </View>
     <View style={styles.navbar}>
-      <TouchableOpacity  ><Icon name="home" size={24} color="white" style={styles.icon} /></TouchableOpacity>
-      <TouchableOpacity ><Icon name="search" size={24} color="white" style={styles.icon} /></TouchableOpacity>
-      <TouchableOpacity ><Icon name="plus-square" size={24} color="white" style={styles.icon} /></TouchableOpacity>
-      <TouchableOpacity ><Icon name="heart" size={24} color="white" style={styles.icon} /></TouchableOpacity>
-      <TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate("Inicio")}  ><Icon name="home" size={24} color="white" style={styles.icon} /></TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate("Buscar")} ><Icon name="search" size={24} color="white" style={styles.iconActive} /></TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate("Agregar")} ><Icon name="plus-square" size={24} color="white" style={styles.icon} /></TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate("Notificaciones")} ><Icon name="heart" size={24} color="white" style={styles.icon} /></TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate("Perfil")}>
         <Image
           source={require('../assets/imagen/WhatsApp Image 2025-03-03 at 4.58.32 PM.jpeg')}
           style={styles.profilePicSmall}
@@ -36,8 +39,8 @@ const Navbar = () => (
       </TouchableOpacity>
     </View>
   </View>
- 
-);
+ );
+};
 
 const Post = ({ isKeyboardVisible, uri }) => {
 
@@ -159,6 +162,9 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginHorizontal: 10,
+  },
+  iconActive: {
+    color: '#3498db',
   },
   profilePicSmall: {
     width: 30,
