@@ -1,28 +1,48 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { useNavigation } from "@react-navigation/native";
 
 const Navbar = () => {
+  const navigation = useNavigation();
+  // const navigation = useNavigation(); // Descomenta si vas a usar navegación
+
   return (
     <View style={styles.navbarContainer}>
       <View style={styles.topBar}>
-        {/* Logo en lugar del search box */}
-        <Image 
-          source={require('./assets/WhatsApp Image 2025-03-03 at 4.58.32 PM.jpeg')} // Reemplaza con la ruta de tu logo
-          style={styles.logo} 
-          resizeMode="contain"
-        />
-        <Icon name="comment" size={24} color="white" style={styles.chatIcon} />
+        <Text style={styles.logo}>More</Text>
+        {/* <TouchableOpacity onPress={() => navigation.navigate('Mensajes')}> */}
+        {/* Esto solo muestra alerta en lugar de navegación */}
+        <TouchableOpacity onPress={() => Alert.alert('Mensajes', 'Aquí irían tus mensajes.')}>
+          <Icon name="comment" size={24} color="white" style={styles.chatIcon} />
+        </TouchableOpacity>
       </View>
+
       <View style={styles.navbar}>
-        <Icon name="home" size={24} color="white" style={styles.icon} />
-        <Icon name="search" size={24} color="white" style={styles.iconActive} />
-        <Icon name="plus-square" size={24} color="white" style={styles.icon} />
-        <Icon name="heart" size={24} color="white" style={styles.icon} />
-        <Image 
-          source={require('./assets/WhatsApp Image 2025-03-03 at 4.58.32 PM.jpeg')} 
-          style={styles.profilePicSmall} 
-        />
+        {/* <TouchableOpacity onPress={() => navigation.navigate('Home')}> */}
+        <TouchableOpacity onPress={() => navigation.navigate("Inicio")}>
+          <Icon name="home" size={24} color="white" style={styles.icon} />
+        </TouchableOpacity>
+
+        {/* <TouchableOpacity onPress={() => navigation.navigate('Buscar')}> */}
+        <TouchableOpacity onPress={() => navigation.navigate("Buscar")}>
+          <Icon name="search" size={24} color="white" style={styles.icon} />
+        </TouchableOpacity>
+
+        {/* <TouchableOpacity onPress={() => navigation.navigate('CrearPublicacion')}> */}
+        <TouchableOpacity onPress={() => navigation.navigate("Agregar")}>
+          <Icon name="plus-square" size={24} color="white" style={styles.icon} />
+        </TouchableOpacity>
+
+        {/* <TouchableOpacity onPress={() => navigation.navigate('Notificaciones')}> */}
+        <TouchableOpacity onPress={() => navigation.navigate("Notificaciones")}>
+          <Icon name="heart" size={24} color="skyblue" style={styles.icon} />
+        </TouchableOpacity>
+
+        {/* <TouchableOpacity onPress={() => navigation.navigate('Perfil')}> */}
+        <TouchableOpacity onPress={() => navigation.navigate("Perfil")}>
+          <Image source={require('../assets/imagen/daniel.jpeg')} style={styles.profilePicSmall} />
+        </TouchableOpacity>
       </View>
     </View>
   );

@@ -1,29 +1,61 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView, Alert } from 'react-native';
+import { useNavigation } from "@react-navigation/native";
+import * as ImagePicker from 'expo-image-picker';
 
 const ConfiguracionScreen = () => {
-  const handleCambiarFoto = () => {
-    console.log("Cambiar foto de perfil");
+  const [selectedImage, setSelectedImage] = useState(require('../assets/imagen/daniel.jpeg'));
+  const [email, setEmail] = useState("danielsanchez192@gmail.com");
+  const [nombre, setNombre] = useState("Daniel Sanchez");
+  const [telefono, setTelefono] = useState("04125529532");
+  const [presentacion, setPresentacion] = useState("Futuro ing en informática\nAmante del anime, y los videojuegos");
+
+  const navigation = useNavigation();
+ const atras= ()=>{
+navigation.goBack();
+ };
+  const handleCambiarFoto = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permiso requerido', 'Se necesita acceso a la galería para cambiar la foto de perfil.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSelectedImage({ uri: result.assets[0].uri });
+    }
   };
 
   const handleGuardarCambios = () => {
-    console.log("Guardar cambios");
+    console.log("Datos actualizados:");
+    console.log("Email:", email);
+    console.log("Nombre:", nombre);
+    console.log("Teléfono:", telefono);
+    console.log("Presentación:", presentacion);
+    Alert.alert("Cambios guardados", "Tu información fue actualizada.");
+    navigation.goBack();
   };
 
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <TouchableOpacity style={styles.backButton}>
+        <TouchableOpacity style={styles.backButton} onPress={atras}>
           <Text style={styles.backText}>Atras</Text>
         </TouchableOpacity>
 
         <Image
-          source={require('./assets/imagen/daniel.jpeg')}
+          source={selectedImage}
           style={styles.profileImage}
         />
-        <Text style={styles.name}>Daniel Sanchez</Text>
+        <Text style={styles.name}>{nombre}</Text>
 
-        {/* Botón para cambiar foto */}
         <TouchableOpacity style={styles.secondaryButton} onPress={handleCambiarFoto}>
           <Text style={styles.buttonText}>Cambiar foto de perfil</Text>
         </TouchableOpacity>
@@ -33,13 +65,13 @@ const ConfiguracionScreen = () => {
 
           <TextInput
             style={styles.input}
-            value="danielsanchez192@gmail.com"
-            editable={false}
+            value={email}
+            onChangeText={setEmail}
           />
           <TextInput
             style={styles.input}
-            value="Daniel Sanchez"
-            editable={false}
+            value={nombre}
+            onChangeText={setNombre}
           />
 
           <View style={styles.row}>
@@ -54,11 +86,11 @@ const ConfiguracionScreen = () => {
             </View>
 
             <View style={styles.inputColumn}>
-              <Text style={styles.label}>Telefono</Text>
+              <Text style={styles.label}>Teléfono</Text>
               <TextInput
                 style={styles.input}
-                value="04125529532"
-                editable={false}
+                value={telefono}
+                onChangeText={setTelefono}
               />
             </View>
           </View>
@@ -68,20 +100,15 @@ const ConfiguracionScreen = () => {
             style={[styles.input, styles.presentation]}
             multiline
             numberOfLines={3}
-            value={'Futuro ing en informática\nAmante del anime, y los videojuegos'}
-            editable={false}
+            value={presentacion}
+            onChangeText={setPresentacion}
           />
         </View>
 
-        <TouchableOpacity style={styles.actionButton}>
-          <Text style={styles.buttonText}>Modificar datos</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate("Cambiarcontraseña")}>
           <Text style={styles.buttonText}>Cambiar contraseña</Text>
         </TouchableOpacity>
 
-        {/* Nuevo botón de guardar cambios */}
         <TouchableOpacity style={[styles.actionButton, styles.saveButton]} onPress={handleGuardarCambios}>
           <Text style={styles.buttonText}>Guardar cambios</Text>
         </TouchableOpacity>
@@ -177,7 +204,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   saveButton: {
-    backgroundColor: '#32CD32', // color verde para diferenciar "Guardar"
+    backgroundColor: '#32CD32',
   },
   buttonText: {
     color: '#fff',

@@ -17,6 +17,21 @@ const CreatePostScreen = ({ navigation }) => {
   const [comment, setComment] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
 
+  const handleini =() =>{
+    navigation.navigate('Inicio');
+  };
+  const handlebus =() =>{
+    navigation.navigate('Buscar');
+  };
+  const handlenoti =() =>{
+    navigation.navigate('Notificaciones');
+  };
+  const handleper =() =>{
+    navigation.navigate('Perfil');
+  };
+  const handlemes =() =>{
+    navigation.navigate('Chats');
+  };
   const handleSelectImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -45,26 +60,26 @@ const CreatePostScreen = ({ navigation }) => {
       <View style={styles.navbarContainer}>
         <View style={styles.topBar}>
           <Text style={styles.logo}>More</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={handlemes}>
             <Icon name="comment" size={24} color="white" style={styles.chatIcon} />
           </TouchableOpacity>
         </View>
         <View style={styles.navbar}>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={handleini}>
             <Icon name="home" size={24} color="white" />
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={handlebus}>
             <Icon name="search" size={24} color="white" />
           </TouchableOpacity>
           <TouchableOpacity onPress={handleSelectImage}>
             <Icon name="plus-square" size={24} color="#1E90FF" />
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={handlenoti}>
             <Icon name="heart" size={24} color="white" />
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={handleper}>
             <Image 
-              source={require('./assets/imagen/3af3aba6a0ecec50f9dbd62f5684da4f.jpg')} 
+              source={require('../assets/imagen/3af3aba6a0ecec50f9dbd62f5684da4f.jpg')} 
               style={styles.profilePicSmall} 
             />
           </TouchableOpacity>

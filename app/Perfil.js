@@ -1,27 +1,32 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
+import { useNavigation } from "@react-navigation/native";
 
 const ProfileScreen = ({ navigation }) => {
+  
   // Cambiado a 'photos' para que "Tus fotos" esté activo por defecto
   const [activeTab, setActiveTab] = useState('photos'); 
   const [selectedImage, setSelectedImage] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
   const images = [
-    require('./assets/imagen/3af3aba6a0ecec50f9dbd62f5684da4f.jpg'),
-    require('./assets/imagen/daniel.jpeg'),
-    require('./assets/imagen/_fea95260-b145-4605-bced-8f13f312f751.jpg'),
-    require('./assets/imagen/WhatsApp Image 2024-01-26 at 10.56.01 AM.jpeg'),
-    require('./assets/imagen/Mre.png'),
-    require('./assets/imagen/montanas-nevadas-en-el-bosque-9792.webp'),
+    require('../assets/imagen/3af3aba6a0ecec50f9dbd62f5684da4f.jpg'),
+    require('../assets/imagen/daniel.jpeg'),
+    require('../assets/imagen/_fea95260-b145-4605-bced-8f13f312f751.jpg'),
+    require('../assets/imagen/WhatsApp Image 2024-01-26 at 10.56.01 AM.jpeg'),
+    require('../assets/imagen/Mre.png'),
+    require('../assets/imagen/montanas-nevadas-en-el-bosque-9792.webp'),
   ];
+  const handleContinuar =() =>{
+    navigation.navigate('Perfil2');
+  };
 
   const handleBack = () => {
     navigation.goBack();
   };
 
   const handleSettings = () => {
-    navigation.navigate('Settings');
+    navigation.navigate('Configuracion');
   };
 
   const openImage = (image) => {
@@ -35,6 +40,7 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   return (
+    
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
@@ -49,7 +55,7 @@ const ProfileScreen = ({ navigation }) => {
       {/* Sección de perfil */}
       <View style={styles.profileSection}>
         <Image 
-          source={require('./assets/imagen/WhatsApp Image 2025-03-03 at 5.32.18 PM.jpeg')}
+          source={require('../assets/imagen/daniel.jpeg')}
           style={styles.profilePic} 
         />
         <Text style={styles.profileName}>Daniel Sanchez</Text>
@@ -74,12 +80,12 @@ const ProfileScreen = ({ navigation }) => {
           </Text>
         </TouchableOpacity>
         
-        <TouchableOpacity 
+        <TouchableOpacity  
           style={[
             styles.tabButton,
             activeTab === 'saved' ? styles.activeTab : styles.inactiveTab
           ]}
-          onPress={() => setActiveTab('saved')}
+          onPress={handleContinuar}
         >
           <Text style={[
             styles.tabText,

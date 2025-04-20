@@ -1,13 +1,15 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { useNavigation } from "@react-navigation/native";
 
 const UserProfileScreen = ({ navigation }) => {
+  
   const handlePerfil = () => {
-    navigation.navigate('Perfil'); // Navega a la pantalla de Perfil
+    navigation.navigate('Configuracion2'); // Navega a la pantalla de Perfil
   };
 
   const handleContactenos = () => {
-    navigation.navigate('CentroAyuda'); // Navega a la pantalla de Contacto/Centro de ayuda
+    navigation.navigate('Contactenos'); // Navega a la pantalla de Contacto/Centro de ayuda
   };
 
   const handleCerrarSesion = () => {
@@ -37,7 +39,7 @@ const UserProfileScreen = ({ navigation }) => {
       </TouchableOpacity>
 
       <Image
-        source={require('./assets/imagen/daniel.jpeg')}
+        source={require('../assets/imagen/daniel.jpeg')}
         style={styles.profileImage}
       />
       <Text style={styles.name}>Daniel Sanchez</Text>

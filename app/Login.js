@@ -57,7 +57,7 @@ export default function Login() {
           </StyledText>
         </StyledView>
 
-        <Button text="Iniciar Sesión" onPress={handleLogin} />
+        <Button text="Iniciar Sesión" onPress={() => navigation.navigate("Inicio")} />
         <StyledText className="text-base text-gray-400 mt-8 mb-2">
           ¿Aún No tienes una cuenta?
         </StyledText>

@@ -25,7 +25,7 @@ const CodigoVerificacionScreen = ({ navigation }) => {
       
       // Navegar después de 2 segundos
       setTimeout(() => {
-        navigation.navigate('NuevaContrasena'); // Navegar a la pantalla de nueva contraseña 
+        navigation.navigate('Nuevacontraseña'); // Navegar a la pantalla de nueva contraseña 
       }, 2000);
     }
   };
@@ -38,7 +38,7 @@ const CodigoVerificacionScreen = ({ navigation }) => {
         </TouchableOpacity>
 
         <Image
-          source={require('./assets/imagen/daniel.jpeg')}
+          source={require('../assets/imagen/daniel.jpeg')}
           style={styles.profileImage}
         />
         <Text style={styles.name}>Daniel Sanchez</Text>

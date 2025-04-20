@@ -25,6 +25,7 @@ const CambiarContrasenaScreen = ({ navigation }) => {
       Alert.alert('Éxito', 'Contraseña actualizada');
       setPassword('');
       setRepeatPassword('');
+      navigation.goBack();
     }
   };
 
@@ -36,7 +37,7 @@ const CambiarContrasenaScreen = ({ navigation }) => {
         </TouchableOpacity>
 
         <Image
-          source={require('./assets/imagen/daniel.jpeg')}
+          source={require('../assets/imagen/daniel.jpeg')}
           style={styles.profileImage}
         />
         <Text style={styles.name}>Daniel Sanchez</Text>
@@ -62,7 +63,7 @@ const CambiarContrasenaScreen = ({ navigation }) => {
             onChangeText={setRepeatPassword}
           />
 
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate("Olvidarcontraseña")}>
             <Text style={styles.link}>¿Olvidó su contraseña?</Text>
           </TouchableOpacity>
         </View>

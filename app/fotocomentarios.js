@@ -12,29 +12,35 @@ import {
   Platform
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { useNavigation } from "@react-navigation/native";
 
 const Navbar = () => (
+
+  
+ 
   <View style={styles.navbarContainer}>
     <View style={styles.topBar}>
       <Text style={styles.logo}>More</Text>
       <Icon name="comment" size={24} color="white" />
     </View>
     <View style={styles.navbar}>
-      <TouchableOpacity><Icon name="home" size={24} color="white" style={styles.icon} /></TouchableOpacity>
-      <TouchableOpacity><Icon name="search" size={24} color="white" style={styles.icon} /></TouchableOpacity>
-      <TouchableOpacity><Icon name="plus-square" size={24} color="white" style={styles.icon} /></TouchableOpacity>
-      <TouchableOpacity><Icon name="heart" size={24} color="white" style={styles.icon} /></TouchableOpacity>
+      <TouchableOpacity  ><Icon name="home" size={24} color="white" style={styles.icon} /></TouchableOpacity>
+      <TouchableOpacity ><Icon name="search" size={24} color="white" style={styles.icon} /></TouchableOpacity>
+      <TouchableOpacity ><Icon name="plus-square" size={24} color="white" style={styles.icon} /></TouchableOpacity>
+      <TouchableOpacity ><Icon name="heart" size={24} color="white" style={styles.icon} /></TouchableOpacity>
       <TouchableOpacity>
         <Image
-          source={require('./assets/imagen/WhatsApp Image 2025-03-03 at 5.33.56 PM.jpeg')}
+          source={require('../assets/imagen/WhatsApp Image 2025-03-03 at 4.58.32 PM.jpeg')}
           style={styles.profilePicSmall}
         />
       </TouchableOpacity>
     </View>
   </View>
+ 
 );
 
-const Post = ({ isKeyboardVisible }) => {
+const Post = ({ isKeyboardVisible, uri }) => {
+
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -46,7 +52,7 @@ const Post = ({ isKeyboardVisible }) => {
       <View style={styles.postHeader}>
         <TouchableOpacity>
           <Image
-            source={require('./assets/imagen/WhatsApp Image 2025-03-03 at 5.33.56 PM.jpeg')}
+            source={require('../assets/imagen/WhatsApp Image 2025-03-03 at 5.33.56 PM.jpeg')}
             style={styles.profilePicLarge}
           />
         </TouchableOpacity>
@@ -59,7 +65,7 @@ const Post = ({ isKeyboardVisible }) => {
       </View>
 
       <Image
-        source={require('./assets/imagen/WhatsApp Image 2025-03-03 at 5.33.56 PM.jpeg')}
+        source={uri}
         style={[styles.postImage, isKeyboardVisible && styles.postImageSmall]}
       />
 
@@ -95,9 +101,9 @@ const Comments = () => (
   </View>
 );
 
-const App = () => {
+const App = (data) => {
   const [keyboardVisible, setKeyboardVisible] = useState(false);
-
+  const imgUri = data.route.params.uri;
   useEffect(() => {
     const show = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
     const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
@@ -114,7 +120,7 @@ const App = () => {
     >
       <Navbar />
       <ScrollView>
-        <Post isKeyboardVisible={keyboardVisible} />
+        <Post isKeyboardVisible={keyboardVisible} uri={imgUri} />
         <Comments />
       </ScrollView>
     </KeyboardAvoidingView>

@@ -58,7 +58,7 @@ const CentroAyudaScreen = ({ navigation }) => {
           </TouchableOpacity>
 
           <Image
-            source={require('./assets/imagen/daniel.jpeg')}
+            source={require('../assets/imagen/daniel.jpeg')}
             style={styles.profileImage}
           />
           <Text style={styles.name}>Daniel Sanchez</Text>

@@ -1,20 +1,20 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-
+import { useNavigation } from "@react-navigation/native";
 // Si usas React Navigation, descomenta la línea de abajo
 // import { useNavigation } from '@react-navigation/native';
 
 const notifications = [
-  { name: 'Sabo', action: 'Le gustó tu publicación', image: require('./assets/imagen/WhatsApp Image 2025-03-02 at 7.38.32 PM.jpeg') },
-  { name: 'Bradley Cooper', action: 'Comentó tu publicación', image: require('./assets/Avatars/WhatsApp Image 2025-03-03 at 11.13.49 AM.jpeg') },
-  { name: 'Victor García', action: 'Le gustó tu publicación', image: require('./assets/Avatars/WhatsApp Image 2025-03-03 at 11.46.39 AM.jpeg') },
-  { name: 'Bradley Cooper', action: 'Comentó tu publicación', image: require('./assets/imagen/GEThHg_bwAAdeR1.jpg') },
-  { name: 'Nami', action: 'Le gustó tu publicación', image: require('./assets/imagen/WhatsApp Image 2025-03-03 at 5.33.56 PM.jpeg') },
-  { name: 'Monkey D Luffy', action: 'Le gustó tu publicación', image: require('./assets/imagen/WhatsApp Image 2025-03-03 at 5.33.56 PM.jpeg') },
-  { name: 'Peter Parker', action: 'Dejó un comentario', image: require('./assets/imagen/a-spectacular-gaming-adventure-with-this-stunning-4k-wallpaper-free-photo.jpg') },
-  { name: 'Bradley Cooper', action: 'Le gustó tu publicación', image: require('./assets/imagen/WhatsApp Image 2025-03-03 at 5.32.18 PM.jpeg') },
-  { name: 'Joe Verde', action: 'Le gustó tu publicación', image: require('./assets/imagen/jkcaptura (9).png') },
+  { name: 'Sabo', action: 'Le gustó tu publicación', image: require('../assets/imagen/WhatsApp Image 2025-03-02 at 7.38.32 PM.jpeg') },
+  { name: 'Bradley Cooper', action: 'Comentó tu publicación', image: require('../assets/Avatars/WhatsApp Image 2025-03-03 at 11.13.49 AM.jpeg') },
+  { name: 'Victor García', action: 'Le gustó tu publicación', image: require('../assets/Avatars/WhatsApp Image 2025-03-03 at 11.46.39 AM.jpeg') },
+  { name: 'Bradley Cooper', action: 'Comentó tu publicación', image: require('../assets/imagen/GEThHg_bwAAdeR1.jpg') },
+  { name: 'Nami', action: 'Le gustó tu publicación', image: require('../assets/imagen/WhatsApp Image 2025-03-03 at 5.33.56 PM.jpeg') },
+  { name: 'Monkey D Luffy', action: 'Le gustó tu publicación', image: require('../assets/imagen/WhatsApp Image 2025-03-03 at 5.33.56 PM.jpeg') },
+  { name: 'Peter Parker', action: 'Dejó un comentario', image: require('../assets/imagen/a-spectacular-gaming-adventure-with-this-stunning-4k-wallpaper-free-photo.jpg') },
+  { name: 'Bradley Cooper', action: 'Le gustó tu publicación', image: require('../assets/imagen/WhatsApp Image 2025-03-03 at 5.32.18 PM.jpeg') },
+  { name: 'Joe Verde', action: 'Le gustó tu publicación', image: require('../assets/imagen/jkcaptura (9).png') },
 ];
 
 const NotificationItem = ({ name, action, image }) => {
@@ -58,6 +58,7 @@ const NotificationsScreen = () => {
 };
 
 const Navbar = () => {
+  const navigation = useNavigation();
   // const navigation = useNavigation(); // Descomenta si vas a usar navegación
 
   return (
@@ -73,28 +74,28 @@ const Navbar = () => {
 
       <View style={styles.navbar}>
         {/* <TouchableOpacity onPress={() => navigation.navigate('Home')}> */}
-        <TouchableOpacity onPress={() => Alert.alert('Navegación', 'Ir a Home')}>
+        <TouchableOpacity onPress={() => navigation.navigate("Inicio")}>
           <Icon name="home" size={24} color="white" style={styles.icon} />
         </TouchableOpacity>
 
         {/* <TouchableOpacity onPress={() => navigation.navigate('Buscar')}> */}
-        <TouchableOpacity onPress={() => Alert.alert('Navegación', 'Ir a Buscar')}>
+        <TouchableOpacity onPress={() => navigation.navigate("Buscar")}>
           <Icon name="search" size={24} color="white" style={styles.icon} />
         </TouchableOpacity>
 
         {/* <TouchableOpacity onPress={() => navigation.navigate('CrearPublicacion')}> */}
-        <TouchableOpacity onPress={() => Alert.alert('Navegación', 'Crear publicación')}>
+        <TouchableOpacity onPress={() => navigation.navigate("Agregar")}>
           <Icon name="plus-square" size={24} color="white" style={styles.icon} />
         </TouchableOpacity>
 
         {/* <TouchableOpacity onPress={() => navigation.navigate('Notificaciones')}> */}
-        <TouchableOpacity onPress={() => Alert.alert('Navegación', 'Estás en Notificaciones')}>
+        <TouchableOpacity onPress={() => navigation.navigate("Notificaciones")}>
           <Icon name="heart" size={24} color="skyblue" style={styles.icon} />
         </TouchableOpacity>
 
         {/* <TouchableOpacity onPress={() => navigation.navigate('Perfil')}> */}
-        <TouchableOpacity onPress={() => Alert.alert('Navegación', 'Ir al perfil')}>
-          <Image source={require('./assets/imagen/3af3aba6a0ecec50f9dbd62f5684da4f.jpg')} style={styles.profilePicSmall} />
+        <TouchableOpacity onPress={() => navigation.navigate("Perfil")}>
+          <Image source={require('../assets/imagen/daniel.jpeg')} style={styles.profilePicSmall} />
         </TouchableOpacity>
       </View>
     </View>

@@ -1,32 +1,36 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
+import { useNavigation } from "@react-navigation/native";
 
 const images = [
-  require('./assets/Avatars/WhatsApp Image 2025-03-03 at 11.15.27 AM.jpeg'),
-  require('./assets/Avatars/WhatsApp Image 2025-03-03 at 2.19.44 PM.jpeg'),
-  require('./assets/Avatars/WhatsApp Image 2025-03-03 at 2.20.28 PM.jpeg'),
-  require('./assets/Avatars/pepito-banner-1.png'),
-  require('./assets/Avatars/WhatsApp Image 2025-03-02 at 7.28.22 PM.jpeg'),
-  require('./assets/Avatars/Pepito-5-1024x576.jpg'),
-  require('./assets/Avatars/WhatsApp Image 2025-03-03 at 2.22.20 PM.jpeg'),
-  require('./assets/Avatars/WhatsApp Image 2025-03-03 at 2.21.10 PM.jpeg'),
+  require('../assets/Avatars/WhatsApp Image 2025-03-03 at 11.15.27 AM.jpeg'),
+  require('../assets/Avatars/WhatsApp Image 2025-03-03 at 2.19.44 PM.jpeg'),
+  require('../assets/Avatars/WhatsApp Image 2025-03-03 at 2.20.28 PM.jpeg'),
+  require('../assets/Avatars/pepito-banner-1.png'),
+  require('../assets/Avatars/WhatsApp Image 2025-03-02 at 7.28.22 PM.jpeg'),
+  require('../assets/Avatars/Pepito-5-1024x576.jpg'),
+  require('../assets/Avatars/WhatsApp Image 2025-03-03 at 2.22.20 PM.jpeg'),
+  require('../assets/Avatars/WhatsApp Image 2025-03-03 at 2.21.10 PM.jpeg'),
  
 ];
 
-const ProfileScreen = () => {
+const ProfileScreen = (data) => {
+  const profile = data.route.params.profile;
+
+  const navigation = useNavigation();
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backText}>Atrás</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.profileSection}>
         <Image 
-          source={require('./assets/Avatars/WhatsApp Image 2025-03-03 at 11.15.27 AM.jpeg')} // Imagen de perfil
+          source={profile.avatar}
           style={styles.profilePic} 
         />
-        <Text style={styles.profileName}>Yerika Rojas</Text>
+        <Text style={styles.profileName}>{profile.name}</Text>
         <Text style={styles.profileDescription}>Futuro Ing en Producción.</Text>
         <Text style={styles.profileDescription}>Amante del Gym y salir a bailar.</Text>
       </View>

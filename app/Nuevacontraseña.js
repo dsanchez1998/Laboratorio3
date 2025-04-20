@@ -11,19 +11,40 @@ import {
   ScrollView,
 } from 'react-native';
 
-const OlvidoContrasenaScreen = ({ navigation }) => {
-  const [email, setEmail] = useState('');
+const NuevaContrasenaScreen = ({ navigation }) => {
+  const [nuevaContrasena, setNuevaContrasena] = useState('');
+  const [repetirContrasena, setRepetirContrasena] = useState('');
 
-  const handleContinuar = () => {
-    if (!email) {
-      Alert.alert('Error', 'Por favor introduzca su correo electrónico');
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      Alert.alert('Error', 'Por favor introduzca un correo electrónico válido');
-    } else {
-      // Aquí iría la lógica para enviar el código al correo
-      Alert.alert('Éxito', 'Se ha enviado un código a su correo electrónico');
-      navigation.navigate('CodigoVerificacion'); // Asumiendo que hay una pantalla siguiente
+  const handleGuardarContrasena = () => {
+    if (!nuevaContrasena || !repetirContrasena) {
+      Alert.alert('Error', 'Por favor complete ambos campos');
+      return;
     }
+
+    if (nuevaContrasena.length < 6) {
+      Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    if (nuevaContrasena !== repetirContrasena) {
+      Alert.alert('Error', 'Las contraseñas no coinciden');
+      return;
+    }
+
+    // Si todo está correcto
+    Alert.alert(
+      'Éxito',
+      'Contraseña actualizada correctamente',
+      [
+        {
+          text: 'Continuar',
+          onPress: () => {
+            // Aquí puedes navegar a la pantalla que corresponda (ej. Login)
+            navigation.navigate('Inicio'); 
+          }
+        }
+      ]
+    );
   };
 
   return (
@@ -34,31 +55,39 @@ const OlvidoContrasenaScreen = ({ navigation }) => {
         </TouchableOpacity>
 
         <Image
-          source={require('./assets/imagen/daniel.jpeg')} // Asegúrate de tener esta imagen en tu proyecto
+          source={require('../assets/imagen/daniel.jpeg')}
           style={styles.profileImage}
         />
         <Text style={styles.name}>Daniel Sanchez</Text>
 
-        <Text style={styles.title}>Olvido su contraseña</Text>
+        <Text style={styles.title}>Nueva Contraseña</Text>
 
         <Text style={styles.description}>
-          Se le enviara un código a su correo, para hacer el restablecimiento de su contraseña, por favor introduzca su correo electrónico.
+          Por favor ingrese y confirme su nueva contraseña
         </Text>
 
         <View style={styles.box}>
           <TextInput
-            placeholder="Introduce tu correo electrónico"
+            placeholder="Nueva contraseña"
             placeholderTextColor="#999"
             style={styles.input}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
+            secureTextEntry
+            value={nuevaContrasena}
+            onChangeText={setNuevaContrasena}
+          />
+
+          <TextInput
+            placeholder="Repetir contraseña"
+            placeholderTextColor="#999"
+            style={styles.input}
+            secureTextEntry
+            value={repetirContrasena}
+            onChangeText={setRepetirContrasena}
           />
         </View>
 
-        <TouchableOpacity style={styles.button} onPress={handleContinuar}>
-          <Text style={styles.buttonText}>Continuar</Text>
+        <TouchableOpacity style={styles.button} onPress={handleGuardarContrasena}>
+          <Text style={styles.buttonText}>Guardar contraseña</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -78,7 +107,7 @@ const styles = StyleSheet.create({
   },
   backButton: {
     position: 'absolute',
-    top: 30,
+    top: 40,
     left: 20,
     backgroundColor: '#1E90FF',
     padding: 10,
@@ -124,6 +153,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 15,
     paddingVertical: 10,
+    marginBottom: 20,
     color: '#000',
   },
   button: {
@@ -140,4 +170,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OlvidoContrasenaScreen;
+export default NuevaContrasenaScreen;

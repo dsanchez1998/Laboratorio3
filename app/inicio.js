@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { useNavigation } from "@react-navigation/native";
 
 
 
@@ -53,29 +54,30 @@ const Post = ({ name, text, profileImage, postImage }) => {
 
 
 const Navbar = () => {
+  const navigation = useNavigation();
   return (
     <View style={styles.navbarContainer}>
       <View style={styles.topBar}>
         <Text style={styles.logo}>More</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("Chats")} title="boton">
           <Icon name="comment" size={24} color="white" style={styles.chatIcon} />
         </TouchableOpacity>
       </View>
       <View style={styles.navbar}>
         <TouchableOpacity>
-          <Icon name="home" size={24} color="white" style={styles.icon} />
+          <Icon name="home" size={24} color="white" style={styles.iconActive} />
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("Buscar")} title="boton">
           <Icon name="search" size={24} color="white" style={styles.icon} />
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("Agregar")} title="boton">
           <Icon name="plus-square" size={24} color="white" style={styles.icon} />
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("Notificaciones")} title="boton">
           <Icon name="heart" size={24} color="white" style={styles.icon} />
         </TouchableOpacity>
-        <TouchableOpacity>
-          <Image source={require('./assets/imagen/3af3aba6a0ecec50f9dbd62f5684da4f.jpg')} style={styles.profilePicSmall} />
+        <TouchableOpacity onPress={() => navigation.navigate("Perfil")} title="boton">
+          <Image source={require('../assets/imagen/daniel.jpeg')} style={styles.profilePicSmall} />
         </TouchableOpacity>
       </View>
     </View>
@@ -91,14 +93,14 @@ const App = () => {
         <Post 
           name="Daniel Sanchez" 
           text="Mi anime favorito ❤️"
-          profileImage={require('./assets/imagen/WhatsApp Image 2025-03-02 at 7.39.09 PM.jpeg')}
-          postImage={require('./assets/imagen/WhatsApp Image 2025-03-02 at 7.39.09 PM.jpeg')}
+          profileImage={require('../assets/imagen/WhatsApp Image 2025-03-02 at 7.39.09 PM.jpeg')}
+          postImage={require('../assets/imagen/WhatsApp Image 2025-03-02 at 7.39.09 PM.jpeg')}
         />
         <Post 
           name="Roussell Duran" 
           text="Mi momento favorito del día"
-          profileImage={require('./assets/imagen/rousse.jpeg')}
-          postImage={require('./assets/imagen/rousse.jpeg')}
+          profileImage={require('../assets/imagen/rousse.jpeg')}
+          postImage={require('../assets/imagen/rousse.jpeg')}
         />
       </ScrollView>
     </View>
@@ -140,6 +142,10 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginHorizontal: 10,
+
+  },
+  iconActive: {
+    color: '#3498db', 
   },
   profilePicSmall: {
     width: 30,

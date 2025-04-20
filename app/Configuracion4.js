@@ -1,52 +1,75 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  ScrollView,
+  Alert,
+  SafeAreaView,
+} from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 
 const ConfiguracionScreen = () => {
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  const handleCambiarFoto = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permissionResult.granted) {
+      Alert.alert('Permiso requerido', 'Necesitas permitir acceso a tu galería');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0].uri);
+    }
+  };
+
+  const handleGuardarCambios = () => {
+    console.log('Guardar cambios');
+  };
+
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         <TouchableOpacity style={styles.backButton}>
           <Text style={styles.backText}>Atras</Text>
         </TouchableOpacity>
 
         <Image
-          source={require('./assets/imagen/daniel.jpeg')}
+          source={selectedImage ? { uri: selectedImage } : require('../assets/imagen/daniel.jpeg')}
           style={styles.profileImage}
         />
         <Text style={styles.name}>Daniel Sanchez</Text>
 
+        <TouchableOpacity style={styles.secondaryButton} onPress={handleCambiarFoto}>
+          <Text style={styles.buttonText}>Cambiar foto de perfil</Text>
+        </TouchableOpacity>
+
         <View style={styles.infoBox}>
           <Text style={styles.sectionTitle}>Datos personales</Text>
 
-          <TextInput
-            style={styles.input}
-            value="danielsanchez192@gmail.com"
-            editable={false}
-          />
-          <TextInput
-            style={styles.input}
-            value="Daniel Sanchez"
-            editable={false}
-          />
+          <TextInput style={styles.input} value="danielsanchez192@gmail.com" editable={false} />
+          <TextInput style={styles.input} value="Daniel Sanchez" editable={false} />
 
           <View style={styles.row}>
             <View style={styles.inputColumn}>
               <Text style={styles.label}>Contraseña</Text>
-              <TextInput
-                style={styles.input}
-                value="********"
-                secureTextEntry
-                editable={false}
-              />
+              <TextInput style={styles.input} value="********" secureTextEntry editable={false} />
             </View>
 
             <View style={styles.inputColumn}>
               <Text style={styles.label}>Telefono</Text>
-              <TextInput
-                style={styles.input}
-                value="04125529532"
-                editable={false}
-              />
+              <TextInput style={styles.input} value="04125529532" editable={false} />
             </View>
           </View>
 
@@ -67,25 +90,29 @@ const ConfiguracionScreen = () => {
         <TouchableOpacity style={styles.actionButton}>
           <Text style={styles.buttonText}>Cambiar contraseña</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.actionButton, styles.saveButton]} onPress={handleGuardarCambios}>
+          <Text style={styles.buttonText}>Guardar cambios</Text>
+        </TouchableOpacity>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: '#1e1e1e',
   },
   scrollContent: {
     alignItems: 'center',
+    paddingBottom: 50,
     paddingTop: 60,
-    paddingBottom: 30,
     paddingHorizontal: 15,
   },
   backButton: {
     position: 'absolute',
-    top: 40,
+    top: 20,
     left: 20,
     backgroundColor: '#1E90FF',
     padding: 10,
@@ -104,6 +131,13 @@ const styles = StyleSheet.create({
   name: {
     color: '#fff',
     fontSize: 18,
+    marginBottom: 10,
+  },
+  secondaryButton: {
+    backgroundColor: '#1E90FF',
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 10,
     marginBottom: 20,
   },
   infoBox: {
@@ -150,6 +184,9 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     width: '80%',
     alignItems: 'center',
+  },
+  saveButton: {
+    backgroundColor: '#32CD32',
   },
   buttonText: {
     color: '#fff',

@@ -2,26 +2,27 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native';
 
 const ProfileScreen = ({ navigation }) => {
-  // Cambiado a 'photos' para que "Tus fotos" esté activo por defecto
-  const [activeTab, setActiveTab] = useState('photos'); 
+  const [activeTab, setActiveTab] = useState('saved');
   const [selectedImage, setSelectedImage] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
   const images = [
-    require('./assets/imagen/3af3aba6a0ecec50f9dbd62f5684da4f.jpg'),
-    require('./assets/imagen/daniel.jpeg'),
-    require('./assets/imagen/_fea95260-b145-4605-bced-8f13f312f751.jpg'),
-    require('./assets/imagen/WhatsApp Image 2024-01-26 at 10.56.01 AM.jpeg'),
-    require('./assets/imagen/Mre.png'),
-    require('./assets/imagen/montanas-nevadas-en-el-bosque-9792.webp'),
+    require('../assets/imagen/WhatsApp Image 2025-03-03 at 5.33.12 PM.jpeg'),
+    require('../assets/imagen/WhatsApp Image 2025-03-03 at 5.32.18 PM.jpeg'),
+    require('../assets/imagen/GEThHg_bwAAdeR1.jpg'),
+    require('../assets/imagen/WhatsApp Image 2025-03-02 at 7.38.32 PM.jpeg'),
+    require('../assets/imagen/daniel.jpeg'),
+    require('../assets/imagen/WhatsApp Image 2025-03-03 at 5.33.56 PM.jpeg'),
   ];
-
+  const handleContinuar =() =>{
+    navigation.navigate('Perfil');
+  };
   const handleBack = () => {
-    navigation.goBack();
+    navigation.navigate("Inicio");
   };
 
   const handleSettings = () => {
-    navigation.navigate('Settings');
+    navigation.navigate('Configuracion');
   };
 
   const openImage = (image) => {
@@ -49,7 +50,7 @@ const ProfileScreen = ({ navigation }) => {
       {/* Sección de perfil */}
       <View style={styles.profileSection}>
         <Image 
-          source={require('./assets/imagen/WhatsApp Image 2025-03-03 at 5.32.18 PM.jpeg')}
+          source={require('../assets/imagen/daniel.jpeg')}
           style={styles.profilePic} 
         />
         <Text style={styles.profileName}>Daniel Sanchez</Text>
@@ -64,7 +65,7 @@ const ProfileScreen = ({ navigation }) => {
             styles.tabButton,
             activeTab === 'photos' ? styles.activeTab : styles.inactiveTab
           ]}
-          onPress={() => setActiveTab('photos')}
+          onPress={handleContinuar}
         >
           <Text style={[
             styles.tabText,
@@ -118,7 +119,6 @@ const ProfileScreen = ({ navigation }) => {
   );
 };
 
-// Los estilos permanecen exactamente iguales
 const styles = StyleSheet.create({
   container: {
     flex: 1,

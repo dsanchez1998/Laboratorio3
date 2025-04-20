@@ -12,7 +12,7 @@ const ChatScreen = ({ navigation }) => {
       message: 'Hola Amigo, me gustan tus fotos.',
       read: true,
       online: true,
-      avatar: require('./assets/Avatars/WhatsApp Image 2025-03-03 at 11.13.34 AM.jpeg')
+      avatar: require('../assets/Avatars/WhatsApp Image 2025-03-03 at 11.13.34 AM.jpeg')
     },
     {
       id: '2',
@@ -21,7 +21,7 @@ const ChatScreen = ({ navigation }) => {
       message: 'La canción Black Eyes es la mujer.',
       read: true,
       online: true,
-      avatar: require('./assets/Avatars/WhatsApp Image 2025-03-03 at 11.13.49 AM.jpeg')
+      avatar: require('../assets/Avatars/WhatsApp Image 2025-03-03 at 11.13.49 AM.jpeg')
     },
     {
       id: '3',
@@ -30,7 +30,7 @@ const ChatScreen = ({ navigation }) => {
       message: 'Xenex sigue en el descanso?',
       read: true,
       online: true,
-      avatar: require('./assets/Avatars/WhatsApp Image 2025-03-03 at 11.15.00 AM.jpeg')
+      avatar: require('../assets/Avatars/WhatsApp Image 2025-03-03 at 11.15.00 AM.jpeg')
     },
     {
       id: '4',
@@ -39,7 +39,7 @@ const ChatScreen = ({ navigation }) => {
       message: 'Fritz cumpleaños túb.',
       read: true,
       online: true,
-      avatar: require('./assets/Avatars/WhatsApp Image 2025-03-03 at 2.20.49 PM.jpeg')
+      avatar: require('../assets/Avatars/WhatsApp Image 2025-03-03 at 2.20.49 PM.jpeg')
     },
     {
       id: '5',
@@ -48,7 +48,7 @@ const ChatScreen = ({ navigation }) => {
       message: 'Yo te compro los dolores $',
       read: true,
       online: true,
-      avatar: require('./assets/Avatars/WhatsApp Image 2025-02-23 at 5.48.54 PM.jpeg')
+      avatar: require('../assets/Avatars/WhatsApp Image 2025-02-23 at 5.48.54 PM.jpeg')
     },
     {
       id: '6',
@@ -57,7 +57,7 @@ const ChatScreen = ({ navigation }) => {
       message: 'Sophia, necesito que hagas el logo.',
       read: true,
       online: true,
-      avatar: require('./assets/Avatars/WhatsApp Image 2025-03-03 at 11.39.06 AM.jpeg')
+      avatar: require('../assets/Avatars/WhatsApp Image 2025-03-03 at 11.39.06 AM.jpeg')
     },
     {
       id: '7',
@@ -66,7 +66,7 @@ const ChatScreen = ({ navigation }) => {
       message: 'Hola, soy tu mayor familia.',
       read: true,
       online: true,
-      avatar: require('./assets/Avatars/WhatsApp Image 2025-03-03 at 11.41.37 AM.jpeg')
+      avatar: require('../assets/Avatars/WhatsApp Image 2025-03-03 at 11.41.37 AM.jpeg')
     },
     {
       id: '8',
@@ -75,7 +75,7 @@ const ChatScreen = ({ navigation }) => {
       message: 'Como has estado?',
       read: true,
       online: true,
-      avatar: require('./assets/Avatars/WhatsApp Image 2025-03-03 at 11.45.02 AM.jpeg')
+      avatar: require('../assets/Avatars/WhatsApp Image 2025-03-03 at 11.45.02 AM.jpeg')
     },
     {
       id: '9',
@@ -84,12 +84,12 @@ const ChatScreen = ({ navigation }) => {
       message: 'Esele man, como has estado?',
       read: false,
       online: false,
-      avatar: require('./assets/Avatars/WhatsApp Image 2025-03-03 at 11.46.39 AM.jpeg')
+      avatar: require('../assets/Avatars/WhatsApp Image 2025-03-03 at 11.46.39 AM.jpeg')
     }
   ];
 
   const handleChatPress = (chat) => {
-    navigation.navigate('SingleChat', { chat });
+    navigation.navigate('Chats2', { chat });
   };
 
   const renderChatItem = ({ item }) => (

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, Image, SafeAreaView } from 'react-native';
-
-const ChatScreen = () => {
+import { useNavigation } from "@react-navigation/native";
+const ChatScreen = (data) => {
+  const chatParams = data.route.params.chat;
+  const navigation = useNavigation();
   const [messages, setMessages] = useState([
     { 
       id: '1', 
@@ -57,31 +59,32 @@ const ChatScreen = () => {
     setNewMessage('');
   };
 
-  const handleProfilePress = () => {
+  const handleProfilePress = (profile) => {
     // Add your profile navigation/action here
-    console.log('Profile pressed');
+     
+      navigation.navigate("Yerika", {profile})
   };
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Header with centered profile */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>Atras</Text>
         </TouchableOpacity>
         
         <TouchableOpacity 
           style={styles.profileContainer} 
-          onPress={handleProfilePress}
+           onPress={() => handleProfilePress(chatParams)}
           activeOpacity={0.7}
         >
           <View style={styles.profileInfo}>
             <Image 
-             source={require('./assets/Avatars/WhatsApp Image 2025-03-03 at 11.15.27 AM.jpeg')}
               style={styles.profileImage}
+              source={chatParams.avatar}
             />
             <View style={styles.profileText}>
-              <Text style={styles.profileName}>Yerika Rojas</Text>
+              <Text style={styles.profileName}>{chatParams.name}</Text>
               <Text style={styles.profileStatus}>En línea</Text>
             </View>
           </View>
