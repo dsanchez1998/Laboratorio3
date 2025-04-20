@@ -67,7 +67,7 @@ const Navbar = () => {
         <Text style={styles.logo}>More</Text>
         {/* <TouchableOpacity onPress={() => navigation.navigate('Mensajes')}> */}
         {/* Esto solo muestra alerta en lugar de navegación */}
-        <TouchableOpacity onPress={() => Alert.alert('Mensajes', 'Aquí irían tus mensajes.')}>
+        <TouchableOpacity onPress={() => navigation.navigate("Chats")}>
           <Icon name="comment" size={24} color="white" style={styles.chatIcon} />
         </TouchableOpacity>
       </View>

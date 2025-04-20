@@ -25,7 +25,7 @@ const CambiarContrasenaScreen = ({ navigation }) => {
       Alert.alert('Éxito', 'Contraseña actualizada');
       setPassword('');
       setRepeatPassword('');
-      navigation.goBack();
+      navigation.navigate('Login');
     }
   };
 

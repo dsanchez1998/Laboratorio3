@@ -40,7 +40,7 @@ const NuevaContrasenaScreen = ({ navigation }) => {
           text: 'Continuar',
           onPress: () => {
             // Aquí puedes navegar a la pantalla que corresponda (ej. Login)
-            navigation.navigate('Inicio'); 
+            navigation.navigate('Login'); 
           }
         }
       ]
