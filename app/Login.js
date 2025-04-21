@@ -37,13 +37,13 @@ export default function Login() {
         ¡Únete a nosotras y explora nuevas posibilidades!
         </StyledText>
         <Input
-          placeholder="Ingresa tu correo electrónico"
+          placeholder="Ingrese su correo electrónico"
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
         />
         <Input
-          placeholder="Ingresa tu Contraseña"
+          placeholder="Ingrese tu contraseña"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
@@ -57,7 +57,7 @@ export default function Login() {
           </StyledText>
         </StyledView>
 
-        <Button text="Iniciar Sesión" onPress={() => navigation.navigate("Inicio")} />
+        <Button text="Iniciar sesión" onPress={() => navigation.navigate("Inicio")} />
         <StyledText className="text-base text-gray-400 mt-8 mb-2">
           ¿Aún No tienes una cuenta?
         </StyledText>

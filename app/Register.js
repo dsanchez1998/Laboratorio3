@@ -39,31 +39,31 @@ export default function Register() {
           Disfruta y explora nuevas posibilidades
         </StyledText>
         <Input
-          placeholder="Ingresa tu nombre de usuario"
+          placeholder="Ingrese su nombre de usuario"
           value={user}
           onChangeText={setUser}
           keyboardType="text"
         />
         <Input
-          placeholder="Ingresa tu correo electronico"
+          placeholder="Ingrese su correo electronico"
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
         />
         <Input
-          placeholder="Ingresa tu numero de telefono"
+          placeholder="Ingrese su número de teléfono"
           value={phone}
           onChangeText={setPhone}
           keyboardType="phone-pad"
         />
         <Input
-          placeholder="Ingrese su Contraseña"
+          placeholder="Ingrese su contraseña"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
         />
         <Input
-          placeholder="Vuelva a repetir la Contraseña"
+          placeholder="Repite la contraseña"
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           secureTextEntry

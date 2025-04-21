@@ -35,11 +35,11 @@ export default function RecoverPasswordCode() {
         </StyledText>
 
         <StyledText className="text-base text-gray-400 text-start mb-8">
-          Solo falta un paso más
+          Penúltimo paso
         </StyledText>
 
         <Input
-          placeholder="Introduzca el código enviado"
+          placeholder="Introduce el código recibido"
           value={code}
           onChangeText={setCode}
           keyboardType="Code-address"

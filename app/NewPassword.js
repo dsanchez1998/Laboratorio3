@@ -47,8 +47,7 @@ export default function NewPassword() {
           className="w-[200px] mb-16"
         />
         <StyledText className="text-2xl font-bold text-white text-start mb-2">
-        ¡Revisa tu correo electrónico e introduce el código
-          para continuar!
+       Ingresa tu nueva contraseña
         </StyledText>
 
         <StyledText className="text-base text-gray-400 text-start mb-8">
@@ -56,13 +55,13 @@ export default function NewPassword() {
         </StyledText>
 
         <Input
-          placeholder="Ingrese su Contraseña"
+          placeholder="Ingrese su contraseña nueva"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
         />
         <Input
-          placeholder="Vuelva a repetir la Contraseña"
+          placeholder="Repite la contraseña nueva"
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           secureTextEntry

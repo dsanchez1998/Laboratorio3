@@ -32,13 +32,13 @@ export default function RecoverPassword() {
           className="w-[200px] mb-16"
         />
         <StyledText className="text-2xl font-bold text-white text-center mb-2">
-          Olvidó su contraseña?
+        ¿Olvidó su contraseña?
         </StyledText>
         <StyledText className="text-base text-gray-400 mb-8">
         ¡No te preocupes, ya lo solucionamos!
         </StyledText>
         <Input
-          placeholder="Ingresa tu correo electrónico"
+          placeholder="Ingrese su correo electrónico"
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
