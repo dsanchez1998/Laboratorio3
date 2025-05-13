@@ -1,0 +1,21 @@
+{
+  "name": "moresocial-media-backend",
+  "version": "1.0.0",
+  "description": "Backend for social media mobile application More",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "pg": "^8.11.3",
+    "minio": "^7.1.3",
+    "dotenv": "^16.3.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "formidable": "^2.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
