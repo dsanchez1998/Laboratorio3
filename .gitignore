@@ -3,6 +3,9 @@
 # dependencies
 node_modules/
 
+#imagenes
+avatars/
+
 # Expo
 .expo/
 dist/
@@ -34,3 +37,7 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+backend/docker-compose.yml
+backend/.env
+.env
+backend/database/init.sql

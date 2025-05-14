@@ -5,6 +5,8 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import { styled } from "nativewind";
 import Checkbox from "expo-checkbox";
+//import { URL_API } from "@env";
+const URL_API = "http://192.168.0.103:3000"; // Reemplaza con tu URL de API real
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -18,7 +20,30 @@ export default function Login() {
   const handleLogin = () => {
     // Aquí irá la lógica de inicio de sesión
     console.log("Iniciando sesión...");
+
+    fetch(`${URL_API}/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    })
+      .then((response) => response.json())
+      .then((answer) => {
+        if (answer.status == "200") {
+          console.log(answer);
+          alert("Bienvenido " + answer.data.nombre);
+          navigation.navigate("Inicio");
+        } else {
+          alert("error: " + data.message);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        alert("Error al iniciar sesión: " + error);
+      });
   };
+
 
   return (
     <ImageBackground
@@ -34,7 +59,7 @@ export default function Login() {
           Inicia sesión con tu cuenta
         </StyledText>
         <StyledText className="text-base text-gray-400 mb-8">
-        ¡Únete a nosotras y explora nuevas posibilidades!
+          ¡Únete a nosotras y explora nuevas posibilidades!
         </StyledText>
         <Input
           placeholder="Ingrese su correo electrónico"
@@ -57,7 +82,7 @@ export default function Login() {
           </StyledText>
         </StyledView>
 
-        <Button text="Iniciar sesión" onPress={() => navigation.navigate("Inicio")} />
+        <Button text="Iniciar sesión" onPress={handleLogin} />
         <StyledText className="text-base text-gray-400 mt-8 mb-2">
           ¿Aún No tienes una cuenta?
         </StyledText>
@@ -67,7 +92,6 @@ export default function Login() {
         >
           Regístrate aquí
         </StyledText>
-  
       </StyledView>
     </ImageBackground>
   );

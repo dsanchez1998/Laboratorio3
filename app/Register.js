@@ -5,21 +5,45 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import { styled } from "nativewind";
 import Checkbox from "expo-checkbox";
-
+import { URL_API } from "@env";
 const StyledView = styled(View);
 const StyledText = styled(Text);
+
 
 export default function Register() {
   const navigation = useNavigation();
   const [email, setEmail] = useState("");
-  const [user, setUser] = useState("");
-  const [phone, setPhone] = useState("");
+  const [nombre, setNombre] = useState("");
+  const [telefono, setTelefono] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isChecked, setChecked] = useState(false);
+  const [apellido, setApellido] = useState("");
 
   const handleRegister = () => {
-    navigation.navigate("RegisterUpload");
+    console.log("Registrando...");
+
+    fetch(`${URL_API}/registrar`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password, nombre, telefono, apellido }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status == "200") {
+          console.log(data);
+          alert("Registro exitoso");
+          navigation.navigate("RegisterUpload", { email });
+        } else {
+          alert("error: " + data.message);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        alert("Error al registrar: " + error);
+      });
   };
 
   return (
@@ -39,9 +63,15 @@ export default function Register() {
           Disfruta y explora nuevas posibilidades
         </StyledText>
         <Input
-          placeholder="Ingrese su nombre de usuario"
-          value={user}
-          onChangeText={setUser}
+          placeholder="Ingrese su nombre"
+          value={nombre}
+          onChangeText={setNombre}
+          keyboardType="text"
+        />
+        <Input
+          placeholder="Ingrese su apellido"
+          value={apellido}
+          onChangeText={setApellido}
           keyboardType="text"
         />
         <Input
@@ -52,8 +82,8 @@ export default function Register() {
         />
         <Input
           placeholder="Ingrese su número de teléfono"
-          value={phone}
-          onChangeText={setPhone}
+          value={telefono}
+          onChangeText={setTelefono}
           keyboardType="phone-pad"
         />
         <Input
@@ -80,7 +110,7 @@ export default function Register() {
             />
           </StyledView>
           <StyledText className="text-gray-400 text-sm">
-          Acepto la Política de privacidad y los Términos de servicio.
+            Acepto la Política de privacidad y los Términos de servicio.
           </StyledText>
         </StyledView>
       </StyledView>
