@@ -66,6 +66,8 @@ export default function RegisterUpload() {
     const fileExtension = image.split(".").pop();
     const fileName = `${email}.${fileExtension}`;
 
+    formData.append('nombreImg',fileName);
+
     formData.append("image", {
       uri: image,
       type: `image/${fileExtension}`,

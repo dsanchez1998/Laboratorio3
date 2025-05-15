@@ -5,8 +5,7 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import { styled } from "nativewind";
 import Checkbox from "expo-checkbox";
-//import { URL_API } from "@env";
-const URL_API = "http://192.168.0.103:3000"; // Reemplaza con tu URL de API real
+import { URL_API } from "@env";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);

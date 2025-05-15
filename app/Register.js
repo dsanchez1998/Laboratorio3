@@ -9,7 +9,6 @@ import { URL_API } from "@env";
 const StyledView = styled(View);
 const StyledText = styled(Text);
 
-
 export default function Register() {
   const navigation = useNavigation();
   const [email, setEmail] = useState("");
