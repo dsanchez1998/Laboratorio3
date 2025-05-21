@@ -14,6 +14,7 @@ import { useSuccessAlert } from "../components/SuccessAlert";
 import Button from "../components/Button";
 import { styled } from "nativewind";
 import { URL_API } from "@env";
+
 import { useRoute } from "@react-navigation/native";
 
 const StyledView = styled(View);
@@ -64,6 +65,8 @@ export default function RegisterUpload() {
     // Usar el email como parte del nombre del archivo
     const fileExtension = image.split(".").pop();
     const fileName = `${email}.${fileExtension}`;
+
+    formData.append('nombreImg',fileName);
 
     formData.append("image", {
       uri: image,

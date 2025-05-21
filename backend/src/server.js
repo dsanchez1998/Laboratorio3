@@ -33,11 +33,7 @@ const server = http.createServer(async (req, res) => {
   if (req.url === "/upload" && req.method === "POST") {
     const form = new formidable.IncomingForm();
     form.uploadDir = avatarsDir;
-
-    form.keepExtensions = true;
-
     form.keepExtensions = true; // Importante para mantener la extensión
-
 
     form.parse(req, async (err, fields, files) => {
       if (err) {
@@ -60,11 +56,8 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
-
-      const fileName = `${Date.now()}_${file.originalFilename}`;
-
       const originalFileName = file.originalFilename;
-
+      const fileName = `${Date.now()}_${originalFileName}`; // Usar el nombre original
       const filePath = path.join(avatarsDir, fileName);
 
       try {
@@ -75,11 +68,7 @@ const server = http.createServer(async (req, res) => {
         const fileStream = fs.createReadStream(filePath);
         await minioClient.putObject(
           "more-social-media-bucket",
-
-          `avatars/${fileName}`,
-
           `avatars/${fileName}`, // Usar el nombre completo con extensión
-
           fileStream
         );
 
@@ -199,11 +188,7 @@ const server = http.createServer(async (req, res) => {
                 apellido: result.rows[0].apellido,
                 email: result.rows[0].email,
                 telefono: result.rows[0].telefono,
-
-                telefono: result.rows[0].foto_perfil,
-
                 foto_perfil: result.rows[0].foto_perfil,
-
               },
             })
           );
