@@ -25,6 +25,7 @@ export default function RegisterUpload() {
   const [image, setImage] = useState(null);
   const route = useRoute();
   const { email } = route.params;
+  const { userId } = route.params;
 
   const pickImage = async () => {
     // Solicitar permisos para acceder a la galería
@@ -64,10 +65,11 @@ export default function RegisterUpload() {
 
     // Usar el email como parte del nombre del archivo
     const fileExtension = image.split(".").pop();
-    const fileName = `${email}.${fileExtension}`;
+    const emailUser = email.split("@")[0];
+    const fileName = `${emailUser}.${fileExtension}`;
 
-    formData.append('nombreImg',fileName);
-
+    formData.append("nombreImg", fileName);
+    formData.append("userId", userId);
     formData.append("image", {
       uri: image,
       type: `image/${fileExtension}`,

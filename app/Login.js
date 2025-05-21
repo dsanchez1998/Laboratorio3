@@ -6,6 +6,7 @@ import Input from "../components/Input";
 import { styled } from "nativewind";
 import Checkbox from "expo-checkbox";
 import { URL_API } from "@env";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -16,31 +17,40 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [isChecked, setChecked] = useState(false);
 
-  const handleLogin = () => {
-    // Aquí irá la lógica de inicio de sesión
-    console.log("Iniciando sesión...");
-
-    fetch(`${URL_API}/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    })
-      .then((response) => response.json())
-      .then((answer) => {
-        if (answer.status == "200") {
-          console.log(answer);
-          alert("Bienvenido " + answer.data.nombre);
-          navigation.navigate("Inicio");
-        } else {
-          alert("error: " + data.message);
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-        alert("Error al iniciar sesión: " + error);
+  const handleLogin = async () => {
+    try {
+      const response = await fetch(`${URL_API}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
       });
+      const answer = await response.json();
+      if (answer.status == "200") {
+        // Guarda el token JWT en AsyncStorage
+        await AsyncStorage.setItem("token", answer.token);
+        await AsyncStorage.setItem(
+          "foto_perfil",
+          answer.data.foto_perfil.toString()
+        );
+
+        await AsyncStorage.setItem(
+          "nombreCompleto",
+          answer.data.nombre + " " + answer.data.apellido
+        );
+
+        await AsyncStorage.setItem("descripcion", answer.data.quotes);
+
+        alert("Bienvenido " + answer.data.nombre);
+        navigation.navigate("Inicio");
+      } else {
+        alert("error: " + answer.message);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error al iniciar sesión: " + error);
+    }
   };
 
   return (

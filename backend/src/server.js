@@ -4,6 +4,8 @@ const { pool } = require("./config/database");
 const { initializeBucket, minioClient } = require("./config/minio");
 const formidable = require("formidable");
 const fs = require("fs");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
 // Inicializar MinIO bucket
 initializeBucket();
@@ -30,6 +32,8 @@ const server = http.createServer(async (req, res) => {
     fs.mkdirSync(avatarsDir);
   }
 
+  /*ENDPOINTS*/
+
   if (req.url === "/upload" && req.method === "POST") {
     const form = new formidable.IncomingForm();
     form.uploadDir = avatarsDir;
@@ -47,6 +51,16 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
+      // Obtener el userId del formulario
+      const userId = fields.userId;
+      if (!userId) {
+        res.writeHead(400);
+        res.end(
+          JSON.stringify({ status: "error", message: "No userId provided" })
+        );
+        return;
+      }
+
       const file = files.image;
       if (!file) {
         res.writeHead(400);
@@ -57,7 +71,7 @@ const server = http.createServer(async (req, res) => {
       }
 
       const originalFileName = file.originalFilename;
-      const fileName = `${Date.now()}_${originalFileName}`; // Usar el nombre original
+      const fileName = `${originalFileName}`; // Usar el nombre original
       const filePath = path.join(avatarsDir, fileName);
 
       try {
@@ -68,24 +82,30 @@ const server = http.createServer(async (req, res) => {
         const fileStream = fs.createReadStream(filePath);
         await minioClient.putObject(
           "more-social-media-bucket",
-          `avatars/${fileName}`, // Usar el nombre completo con extensión
+          `avatars/${fileName}`,
           fileStream
+        );
+
+        // Actualizar la columna foto_perfil en la base de datos
+        await pool.query(
+          `UPDATE "Usuario" SET foto_perfil = $1 WHERE id = $2`,
+          [fileName, userId]
         );
 
         res.writeHead(200);
         res.end(
           JSON.stringify({
             status: "success",
-            message: "Image uploaded successfully",
+            message: "Imagen subida y guardada correctamente",
             fileName: `avatars/${fileName}`,
             url: `/avatars/${fileName}`,
           })
         );
       } catch (uploadError) {
-        console.error("Error uploading:", uploadError);
+        console.error("Error al subir:", uploadError);
         res.writeHead(500);
         res.end(
-          JSON.stringify({ status: "error", message: "Error uploading image" })
+          JSON.stringify({ status: "error", message: "Error al subir imagen" })
         );
       }
     });
@@ -122,17 +142,22 @@ const server = http.createServer(async (req, res) => {
     req.on("end", async () => {
       const userData = JSON.parse(body);
       try {
-        const sql = `INSERT INTO "Usuario" (nombre, apellido, email, contrasena, telefono, quotes, crear)
-        VALUES ($1, $2, $3, $4, $5, $6, CURRENT_DATE)
-        RETURNING id, nombre, apellido, email, telefono, quotes, crear`;
+        // Cifrar la contraseña antes de guardar
+        const hashedPassword = await bcrypt.hash(userData.password, 10);
+
+        const sql = `INSERT INTO "Usuario" (nombre, apellido, email, contrasena, telefono, quotes,pregunta,respuesta, crear)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_DATE)
+        RETURNING id, nombre, apellido, email, telefono, quotes,pregunta,respuesta crear`;
 
         const result = await pool.query(sql, [
           userData.nombre,
           userData.apellido,
           userData.email,
-          userData.password,
+          hashedPassword, // Guardar contraseña cifrada
           userData.telefono,
           userData.quotes,
+          userData.pregunta,
+          userData.respuesta,
         ]);
 
         if (result && result.rows.length > 0) {
@@ -171,27 +196,50 @@ const server = http.createServer(async (req, res) => {
     req.on("end", async () => {
       try {
         const userData = JSON.parse(body);
-        const sql = `SELECT * FROM "Usuario" WHERE email = $1 AND contrasena = $2`;
-        const result = await pool.query(sql, [
-          userData.email,
-          userData.password,
-        ]);
+        const sql = `SELECT * FROM "Usuario" WHERE email = $1`;
+        const result = await pool.query(sql, [userData.email]);
 
         if (result && result.rows.length > 0) {
-          res.writeHead(200);
-          res.end(
-            JSON.stringify({
-              status: "200",
-              message: "Login exitoso",
-              data: {
-                nombre: result.rows[0].nombre,
-                apellido: result.rows[0].apellido,
-                email: result.rows[0].email,
-                telefono: result.rows[0].telefono,
-                foto_perfil: result.rows[0].foto_perfil,
-              },
-            })
+          const user = result.rows[0];
+          // Comparar la contraseña cifrada
+          const passwordMatch = await bcrypt.compare(
+            userData.password,
+            user.contrasena
           );
+
+          if (passwordMatch) {
+            // Generar JWT
+            const token = jwt.sign(
+              { id: user.id, email: user.email },
+              process.env.JWT_SECRET || "secret_key",
+              { expiresIn: "1h" }
+            );
+
+            res.writeHead(200);
+            res.end(
+              JSON.stringify({
+                status: "200",
+                message: "Login exitoso",
+                token, // Enviar el token al cliente
+                data: {
+                  nombre: user.nombre,
+                  apellido: user.apellido,
+                  email: user.email,
+                  telefono: user.telefono,
+                  foto_perfil: user.foto_perfil,
+                  quotes: user.quotes,
+                },
+              })
+            );
+          } else {
+            res.writeHead(401);
+            res.end(
+              JSON.stringify({
+                status: "401",
+                message: "Credenciales inválidas",
+              })
+            );
+          }
         } else {
           res.writeHead(401);
           res.end(
@@ -206,6 +254,254 @@ const server = http.createServer(async (req, res) => {
             status: "500",
             message: "Error al autenticar usuario: " + error.message,
             error: error.message,
+          })
+        );
+      }
+    });
+    return;
+  }
+
+  if (req.url === "/api" && req.method === "GET") {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("Hello, browser!");
+    return;
+  }
+
+  /* Endpoint para validar si el correo existe */
+  if (req.url === "/validate-email" && req.method === "POST") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk.toString();
+    });
+
+    req.on("end", async () => {
+      try {
+        const { email } = JSON.parse(body);
+
+        if (!email) {
+          res.writeHead(400);
+          res.end(
+            JSON.stringify({
+              exists: false,
+              message: "El correo electrónico es requerido.",
+            })
+          );
+          return;
+        }
+
+        // Consultar la base de datos para verificar si el email existe
+        const sql = `SELECT id FROM "Usuario" WHERE email = $1`;
+        const result = await pool.query(sql, [email]);
+
+        if (result && result.rows.length > 0) {
+          // El correo existe
+          res.writeHead(200);
+          res.end(
+            JSON.stringify({
+              exists: true,
+              message: "Correo electrónico verificado.",
+            })
+          );
+        } else {
+          // El correo no existe
+          res.writeHead(404); // Usar 404 Not Found para indicar que el recurso (usuario con ese email) no fue encontrado
+          res.end(
+            JSON.stringify({
+              exists: false,
+              message: "El correo electrónico no se encuentra registrado.",
+            })
+          );
+        }
+      } catch (error) {
+        console.error("Error al validar correo:", error);
+        res.writeHead(500);
+        res.end(
+          JSON.stringify({
+            exists: false,
+            message: "Error interno del servidor al validar el correo.",
+          })
+        );
+      }
+    });
+    return;
+  }
+
+  /* Endpoint para obtener la pregunta de seguridad */
+  if (req.url === "/get-security-question" && req.method === "POST") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk.toString();
+    });
+
+    req.on("end", async () => {
+      try {
+        const { email } = JSON.parse(body);
+
+        if (!email) {
+          res.writeHead(400);
+          res.end(
+            JSON.stringify({ message: "El correo electrónico es requerido." })
+          );
+          return;
+        }
+
+        // Normalizar el email a minúsculas para la búsqueda
+        const normalizedEmail = email.toLowerCase();
+        const sql = `SELECT pregunta FROM "Usuario" WHERE email = $1`;
+        const result = await pool.query(sql, [normalizedEmail]);
+
+        if (result && result.rows.length > 0 && result.rows[0].pregunta) {
+          res.writeHead(200);
+          res.end(JSON.stringify({ question: result.rows[0].pregunta }));
+        } else if (
+          result &&
+          result.rows.length > 0 &&
+          !result.rows[0].pregunta
+        ) {
+          res.writeHead(404); // Not Found
+          res.end(
+            JSON.stringify({
+              message:
+                "El usuario no tiene una pregunta de seguridad configurada.",
+            })
+          );
+        } else {
+          res.writeHead(404); // Not Found
+          res.end(
+            JSON.stringify({ message: "Correo electrónico no encontrado." })
+          );
+        }
+      } catch (error) {
+        console.error("Error al obtener pregunta de seguridad:", error);
+        res.writeHead(500);
+        res.end(
+          JSON.stringify({
+            message: "Error interno del servidor al obtener la pregunta.",
+          })
+        );
+      }
+    });
+    return;
+  }
+
+  /* Endpoint para validar la respuesta de seguridad */
+  if (req.url === "/validate-security-answer" && req.method === "POST") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk.toString();
+    });
+
+    req.on("end", async () => {
+      try {
+        const { email, answer } = JSON.parse(body);
+
+        if (!email || typeof answer === "undefined") {
+          res.writeHead(400);
+          res.end(
+            JSON.stringify({
+              valid: false,
+              message: "Correo electrónico y respuesta son requeridos.",
+            })
+          );
+          return;
+        }
+        // Normalizar el email a minúsculas para la búsqueda y la respuesta para la comparación
+        const normalizedEmail = email.toLowerCase();
+        const normalizedAnswer = answer.toLowerCase();
+
+        const sql = `SELECT respuesta FROM "Usuario" WHERE email = $1`;
+        const result = await pool.query(sql, [normalizedEmail]);
+
+        if (
+          result &&
+          result.rows.length > 0 &&
+          result.rows[0].respuesta &&
+          result.rows[0].respuesta.toLowerCase() === normalizedAnswer
+        ) {
+          res.writeHead(200);
+          res.end(
+            JSON.stringify({ valid: true, message: "Respuesta correcta." })
+          );
+        } else {
+          res.writeHead(400); // O 401 si prefieres para "no autorizado" por respuesta incorrecta
+          res.end(
+            JSON.stringify({
+              valid: false,
+              message:
+                "La respuesta de seguridad es incorrecta o el usuario no fue encontrado.",
+            })
+          );
+        }
+      } catch (error) {
+        console.error("Error al validar respuesta de seguridad:", error);
+        res.writeHead(500);
+        res.end(
+          JSON.stringify({
+            valid: false,
+            message: "Error interno del servidor al validar la respuesta.",
+          })
+        );
+      }
+    });
+    return;
+  }
+
+  /* Endpoint para restablecer la contraseña */
+  if (req.url === "/reset-password" && req.method === "POST") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk.toString();
+    });
+
+    req.on("end", async () => {
+      try {
+        const { email, newPassword } = JSON.parse(body);
+
+        if (!email || !newPassword) {
+          res.writeHead(400);
+          res.end(
+            JSON.stringify({
+              success: false,
+              message: "Correo electrónico y nueva contraseña son requeridos.",
+            })
+          );
+          return;
+        }
+
+        // Normalizar el email a minúsculas para la búsqueda
+        const normalizedEmail = email.toLowerCase();
+
+        // Cifrar la nueva contraseña
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Actualizar la contraseña en la base de datos
+        const sql = `UPDATE "Usuario" SET contrasena = $1 WHERE email = $2 RETURNING id`;
+        const result = await pool.query(sql, [hashedPassword, normalizedEmail]);
+
+        if (result && result.rows.length > 0) {
+          res.writeHead(200);
+          res.end(
+            JSON.stringify({
+              success: true,
+              message: "Contraseña actualizada con éxito.",
+            })
+          );
+        } else {
+          res.writeHead(404); // Not Found if email doesn't match any user
+          res.end(
+            JSON.stringify({
+              success: false,
+              message: "Usuario no encontrado.",
+            })
+          );
+        }
+      } catch (error) {
+        console.error("Error al restablecer contraseña:", error);
+        res.writeHead(500);
+        res.end(
+          JSON.stringify({
+            success: false,
+            message: "Error interno del servidor al restablecer la contraseña.",
           })
         );
       }
