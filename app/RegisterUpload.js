@@ -13,6 +13,8 @@ import * as ImagePicker from "expo-image-picker";
 import { useSuccessAlert } from "../components/SuccessAlert";
 import Button from "../components/Button";
 import { styled } from "nativewind";
+import { URL_API } from "@env";
+import { useRoute } from "@react-navigation/native";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -20,6 +22,8 @@ const StyledText = styled(Text);
 export default function RegisterUpload() {
   const { show, Alert } = useSuccessAlert();
   const [image, setImage] = useState(null);
+  const route = useRoute();
+  const { email } = route.params;
 
   const pickImage = async () => {
     // Solicitar permisos para acceder a la galería
@@ -55,10 +59,42 @@ export default function RegisterUpload() {
       return;
     }
 
-    show({
-      title: "¡Tus datos, fueron guardados con éxito!",
-      route: "Login",
+    const formData = new FormData();
+
+    // Usar el email como parte del nombre del archivo
+    const fileExtension = image.split(".").pop();
+    const fileName = `${email}.${fileExtension}`;
+
+    formData.append("image", {
+      uri: image,
+      type: `image/${fileExtension}`,
+      name: fileName,
     });
+
+    fetch(`${URL_API}/upload`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "multipart/form-data",
+      },
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        if (data.status === "success") {
+          show({
+            title: "¡Tus datos, fueron guardados con éxito!",
+            route: "Login",
+          });
+        } else {
+          RNAlert.alert("Error", data.message);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        alert("Error al subir la imagen: " + error);
+      });
   };
 
   return (
@@ -68,7 +104,7 @@ export default function RegisterUpload() {
     >
       <StyledView className="flex-1 p-4 items-center justify-center">
         <StyledText className="text-2xl font-bold text-white text-start mb-2">
-        Últimos retoques a tu registro
+          Últimos retoques a tu registro
         </StyledText>
 
         <StyledText className="text-xl text-gray-400 text-start mb-8">
