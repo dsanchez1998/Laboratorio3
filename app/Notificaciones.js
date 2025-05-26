@@ -1,20 +1,66 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
 import { useNavigation } from "@react-navigation/native";
+import { URL_API } from "@env";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 // Si usas React Navigation, descomenta la línea de abajo
 // import { useNavigation } from '@react-navigation/native';
 
 const notifications = [
-  { name: 'Sabo', action: 'Le gustó tu publicación', image: require('../assets/imagen/WhatsApp Image 2025-03-02 at 7.38.32 PM.jpeg') },
-  { name: 'Bradley Cooper', action: 'Comentó tu publicación', image: require('../assets/Avatars/WhatsApp Image 2025-03-03 at 11.13.49 AM.jpeg') },
-  { name: 'Victor García', action: 'Le gustó tu publicación', image: require('../assets/Avatars/WhatsApp Image 2025-03-03 at 11.46.39 AM.jpeg') },
-  { name: 'Bradley Cooper', action: 'Comentó tu publicación', image: require('../assets/imagen/GEThHg_bwAAdeR1.jpg') },
-  { name: 'Nami', action: 'Le gustó tu publicación', image: require('../assets/imagen/WhatsApp Image 2025-03-03 at 5.33.56 PM.jpeg') },
-  { name: 'Monkey D Luffy', action: 'Le gustó tu publicación', image: require('../assets/imagen/WhatsApp Image 2025-03-03 at 5.33.56 PM.jpeg') },
-  { name: 'Peter Parker', action: 'Dejó un comentario', image: require('../assets/imagen/a-spectacular-gaming-adventure-with-this-stunning-4k-wallpaper-free-photo.jpg') },
-  { name: 'Bradley Cooper', action: 'Le gustó tu publicación', image: require('../assets/imagen/WhatsApp Image 2025-03-03 at 5.32.18 PM.jpeg') },
-  { name: 'Joe Verde', action: 'Le gustó tu publicación', image: require('../assets/imagen/jkcaptura (9).png') },
+  {
+    name: "Sabo",
+    action: "Le gustó tu publicación",
+    image: require("../assets/imagen/WhatsApp Image 2025-03-02 at 7.38.32 PM.jpeg"),
+  },
+  {
+    name: "Bradley Cooper",
+    action: "Comentó tu publicación",
+    image: require("../assets/Avatars/WhatsApp Image 2025-03-03 at 11.13.49 AM.jpeg"),
+  },
+  {
+    name: "Victor García",
+    action: "Le gustó tu publicación",
+    image: require("../assets/Avatars/WhatsApp Image 2025-03-03 at 11.46.39 AM.jpeg"),
+  },
+  {
+    name: "Bradley Cooper",
+    action: "Comentó tu publicación",
+    image: require("../assets/imagen/GEThHg_bwAAdeR1.jpg"),
+  },
+  {
+    name: "Nami",
+    action: "Le gustó tu publicación",
+    image: require("../assets/imagen/WhatsApp Image 2025-03-03 at 5.33.56 PM.jpeg"),
+  },
+  {
+    name: "Monkey D Luffy",
+    action: "Le gustó tu publicación",
+    image: require("../assets/imagen/WhatsApp Image 2025-03-03 at 5.33.56 PM.jpeg"),
+  },
+  {
+    name: "Peter Parker",
+    action: "Dejó un comentario",
+    image: require("../assets/imagen/a-spectacular-gaming-adventure-with-this-stunning-4k-wallpaper-free-photo.jpg"),
+  },
+  {
+    name: "Bradley Cooper",
+    action: "Le gustó tu publicación",
+    image: require("../assets/imagen/WhatsApp Image 2025-03-03 at 5.32.18 PM.jpeg"),
+  },
+  {
+    name: "Joe Verde",
+    action: "Le gustó tu publicación",
+    image: require("../assets/imagen/jkcaptura (9).png"),
+  },
 ];
 
 const NotificationItem = ({ name, action, image }) => {
@@ -25,7 +71,7 @@ const NotificationItem = ({ name, action, image }) => {
     // navigation.navigate('DetalleNotificacion', { user: name });
 
     // Por ahora, solo mostramos una alerta
-    Alert.alert('Notificación', `${name} ${action}`);
+    Alert.alert("Notificación", `${name} ${action}`);
   };
 
   return (
@@ -59,7 +105,17 @@ const NotificationsScreen = () => {
 
 const Navbar = () => {
   const navigation = useNavigation();
-  // const navigation = useNavigation(); // Descomenta si vas a usar navegación
+  const [fotoPerfil, setFotoPerfil] = useState(null);
+
+  useEffect(() => {
+    const cargarFotoPerfil = async () => {
+      const foto = await AsyncStorage.getItem("foto_perfil");
+      setFotoPerfil(foto);
+    };
+    cargarFotoPerfil();
+  }, []);
+
+  const imageUrl = fotoPerfil ? `${URL_API}/avatars/${fotoPerfil}` : null;
 
   return (
     <View style={styles.navbarContainer}>
@@ -68,7 +124,12 @@ const Navbar = () => {
         {/* <TouchableOpacity onPress={() => navigation.navigate('Mensajes')}> */}
         {/* Esto solo muestra alerta en lugar de navegación */}
         <TouchableOpacity onPress={() => navigation.navigate("Chats")}>
-          <Icon name="comment" size={24} color="white" style={styles.chatIcon} />
+          <Icon
+            name="comment"
+            size={24}
+            color="white"
+            style={styles.chatIcon}
+          />
         </TouchableOpacity>
       </View>
 
@@ -85,7 +146,12 @@ const Navbar = () => {
 
         {/* <TouchableOpacity onPress={() => navigation.navigate('CrearPublicacion')}> */}
         <TouchableOpacity onPress={() => navigation.navigate("Agregar")}>
-          <Icon name="plus-square" size={24} color="white" style={styles.icon} />
+          <Icon
+            name="plus-square"
+            size={24}
+            color="white"
+            style={styles.icon}
+          />
         </TouchableOpacity>
 
         {/* <TouchableOpacity onPress={() => navigation.navigate('Notificaciones')}> */}
@@ -95,7 +161,7 @@ const Navbar = () => {
 
         {/* <TouchableOpacity onPress={() => navigation.navigate('Perfil')}> */}
         <TouchableOpacity onPress={() => navigation.navigate("Perfil")}>
-          <Image source={require('../assets/imagen/daniel.jpeg')} style={styles.profilePicSmall} />
+          <Image source={{ uri: imageUrl }} style={styles.profilePicSmall} />
         </TouchableOpacity>
       </View>
     </View>
@@ -105,17 +171,17 @@ const Navbar = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: "#000",
     paddingTop: 20,
   },
   scroll: {
     paddingHorizontal: 10,
   },
   notificationItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 12,
-    borderBottomColor: '#333',
+    borderBottomColor: "#333",
     borderBottomWidth: 1,
   },
   profileImage: {
@@ -125,39 +191,39 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   name: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
     fontSize: 15,
   },
   action: {
-    color: 'white',
+    color: "white",
     fontSize: 13,
   },
   navbarContainer: {
-    width: '100%',
+    width: "100%",
   },
   topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 15,
     marginBottom: 10,
   },
   logo: {
     fontSize: 24,
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
   },
   chatIcon: {
     marginRight: 10,
   },
   navbar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    backgroundColor: '#111',
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    backgroundColor: "#111",
     padding: 15,
-    width: '100%',
+    width: "100%",
   },
   icon: {
     marginHorizontal: 10,

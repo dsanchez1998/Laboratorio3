@@ -1,43 +1,61 @@
-import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  Image, 
-  StyleSheet, 
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
   SafeAreaView,
   ScrollView,
-  Alert
-} from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import * as ImagePicker from 'expo-image-picker';
+  Alert,
+} from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
+import * as ImagePicker from "expo-image-picker";
+import { URL_API } from "@env";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const CreatePostScreen = ({ navigation }) => {
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
 
-  const handleini =() =>{
-    navigation.navigate('Inicio');
+  const handleini = () => {
+    navigation.navigate("Inicio");
   };
-  const handlebus =() =>{
-    navigation.navigate('Buscar');
+
+  const handlebus = () => {
+    navigation.navigate("Buscar");
   };
-  const handlenoti =() =>{
-    navigation.navigate('Notificaciones');
+
+  const handlenoti = () => {
+    navigation.navigate("Notificaciones");
   };
-  const handleper =() =>{
-    navigation.navigate('Perfil');
+
+  const handleper = () => {
+    navigation.navigate("Perfil");
   };
-  const handlemes =() =>{
-    navigation.navigate('Chats');
+
+  const handlemes = () => {
+    navigation.navigate("Chats");
   };
+
   const handleSelectImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (status !== "granted") {
+      RNAlert.alert(
+        "Permiso denegado",
+        "Necesitamos permisos para acceder a tu galería"
+      );
+      return;
+    }
+
+    // Abrir el selector de imágenes
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
+      aspect: [1, 1],
+      quality: 0.7,
     });
 
     if (!result.canceled) {
@@ -45,13 +63,48 @@ const CreatePostScreen = ({ navigation }) => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!comment && !selectedImage) {
-      Alert.alert('Error', 'Agrega texto o una imagen para publicar');
+      Alert.alert("Error", "Agrega texto o una imagen para publicar");
       return;
     }
-    Alert.alert('Listo', 'Tu publicación ha sido compartida');
-    navigation.goBack();
+
+    const formData = new FormData();
+
+    const fileExtension = selectedImage.split(".").pop();
+    const imgName = selectedImage.split("/").pop();
+
+    const userId = await AsyncStorage.getItem("userId");
+    formData.append("usuario_id", userId);
+    formData.append("contenido", comment);
+    formData.append("image", {
+      uri: selectedImage,
+      type: `image/${fileExtension}`,
+      name: imgName,
+    });
+
+    fetch(`${URL_API}/publicar`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "multipart/form-data",
+      },
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        if (data.status === "200") {
+          Alert.alert("Listo", "Tu publicación ha sido compartida");
+          navigation.goBack();
+        } else {
+          Alert.alert("Error al publicar: ", data.message);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        alert("Error al subir la imagen: " + error);
+      });
   };
 
   return (
@@ -61,7 +114,12 @@ const CreatePostScreen = ({ navigation }) => {
         <View style={styles.topBar}>
           <Text style={styles.logo}>More</Text>
           <TouchableOpacity onPress={handlemes}>
-            <Icon name="comment" size={24} color="white" style={styles.chatIcon} />
+            <Icon
+              name="comment"
+              size={24}
+              color="white"
+              style={styles.chatIcon}
+            />
           </TouchableOpacity>
         </View>
         <View style={styles.navbar}>
@@ -78,9 +136,9 @@ const CreatePostScreen = ({ navigation }) => {
             <Icon name="heart" size={24} color="white" />
           </TouchableOpacity>
           <TouchableOpacity onPress={handleper}>
-            <Image 
-              source={require('../assets/imagen/3af3aba6a0ecec50f9dbd62f5684da4f.jpg')} 
-              style={styles.profilePicSmall} 
+            <Image
+              source={require("../assets/imagen/3af3aba6a0ecec50f9dbd62f5684da4f.jpg")}
+              style={styles.profilePicSmall}
             />
           </TouchableOpacity>
         </View>
@@ -97,7 +155,7 @@ const CreatePostScreen = ({ navigation }) => {
           onChangeText={setComment}
         />
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.imageSelector}
           onPress={handleSelectImage}
         >
@@ -107,11 +165,11 @@ const CreatePostScreen = ({ navigation }) => {
 
         {selectedImage && (
           <View style={styles.imagePreviewContainer}>
-            <Image 
-              source={{ uri: selectedImage }} 
-              style={styles.selectedImage} 
+            <Image
+              source={{ uri: selectedImage }}
+              style={styles.selectedImage}
             />
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.removeImageButton}
               onPress={() => setSelectedImage(null)}
             >
@@ -120,8 +178,11 @@ const CreatePostScreen = ({ navigation }) => {
           </View>
         )}
 
-        <TouchableOpacity 
-          style={[styles.submitButton, (!comment && !selectedImage) && styles.disabledButton]}
+        <TouchableOpacity
+          style={[
+            styles.submitButton,
+            !comment && !selectedImage && styles.disabledButton,
+          ]}
           onPress={handleSubmit}
           disabled={!comment && !selectedImage}
         >
@@ -136,34 +197,34 @@ const CreatePostScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#121212',
-    marginTop: 30
+    backgroundColor: "#121212",
+    marginTop: 30,
   },
   navbarContainer: {
     borderBottomWidth: 0.5,
-    borderBottomColor: '#333',
+    borderBottomColor: "#333",
   },
   topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 30,
   },
   logo: {
     fontSize: 22,
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
     letterSpacing: 1,
   },
   chatIcon: {
     marginRight: 10,
   },
   navbar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     paddingVertical: 12,
     borderTopWidth: 0.5,
-    borderTopColor: '#333',
+    borderTopColor: "#333",
   },
   profilePicSmall: {
     width: 28,
@@ -175,63 +236,63 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   input: {
-    backgroundColor: '#252525',
-    color: 'white',
+    backgroundColor: "#252525",
+    color: "white",
     fontSize: 16,
     minHeight: 120,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: "#333",
   },
   imageSelector: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#252525',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#252525",
     padding: 16,
     borderRadius: 12,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: "#333",
   },
   imageSelectorText: {
-    color: '#1E90FF',
+    color: "#1E90FF",
     fontSize: 16,
     marginLeft: 10,
   },
   imagePreviewContainer: {
-    position: 'relative',
+    position: "relative",
     marginBottom: 20,
     borderRadius: 12,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   selectedImage: {
-    width: '100%',
+    width: "100%",
     height: 300,
   },
   removeImageButton: {
-    position: 'absolute',
+    position: "absolute",
     top: 10,
     right: 10,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: "rgba(0,0,0,0.5)",
     borderRadius: 15,
     padding: 5,
   },
   submitButton: {
-    backgroundColor: '#1E90FF',
+    backgroundColor: "#1E90FF",
     borderRadius: 12,
     padding: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   disabledButton: {
-    backgroundColor: '#1E90FF50',
+    backgroundColor: "#1E90FF50",
   },
   submitText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
 

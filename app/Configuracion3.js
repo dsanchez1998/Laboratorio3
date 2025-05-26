@@ -1,23 +1,53 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView, Alert } from 'react-native';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  ScrollView,
+  Alert,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import * as ImagePicker from 'expo-image-picker';
+import * as ImagePicker from "expo-image-picker";
 
 const ConfiguracionScreen = () => {
-  const [selectedImage, setSelectedImage] = useState(require('../assets/imagen/daniel.jpeg'));
-  const [email, setEmail] = useState("danielsanchez192@gmail.com");
-  const [nombre, setNombre] = useState("Daniel Sanchez");
-  const [telefono, setTelefono] = useState("04125529532");
-  const [presentacion, setPresentacion] = useState("Futuro ing en informática\nAmante del anime, y los videojuegos");
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [email, setEmail] = useState("");
+  const [nombre, setNombre] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [presentacion, setPresentacion] = useState("");
+
+  const [fotoPerfil, setFotoPerfil] = useState(null);
+  const [nombreCompleto, setNombreCompleto] = useState(null);
+  const [descripcion, setDescripcion] = useState(null);
+
+  useEffect(() => {
+    const cargarFotoPerfil = async () => {
+      const foto = await AsyncStorage.getItem("foto_perfil");
+      const nombreCompleto = await AsyncStorage.getItem("nombreCompleto");
+      const descripcion = await AsyncStorage.getItem("descripcion");
+      setNombreCompleto(nombreCompleto);
+      setFotoPerfil(foto);
+      setDescripcion(descripcion);
+    };
+    cargarFotoPerfil();
+  }, []);
+
+  const imageUrl = fotoPerfil ? `${URL_API}/avatars/${fotoPerfil}` : null;
 
   const navigation = useNavigation();
- const atras= ()=>{
-navigation.goBack();
- };
+  const atras = () => {
+    navigation.goBack();
+  };
   const handleCambiarFoto = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permiso requerido', 'Se necesita acceso a la galería para cambiar la foto de perfil.');
+    if (status !== "granted") {
+      Alert.alert(
+        "Permiso requerido",
+        "Se necesita acceso a la galería para cambiar la foto de perfil."
+      );
       return;
     }
 
@@ -29,7 +59,7 @@ navigation.goBack();
     });
 
     if (!result.canceled) {
-      setSelectedImage({ uri: result.assets[0].uri });
+      setSelectedImage({ uri: imageUrl });
     }
   };
 
@@ -45,18 +75,21 @@ navigation.goBack();
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <TouchableOpacity style={styles.backButton} onPress={atras}>
           <Text style={styles.backText}>Atras</Text>
         </TouchableOpacity>
 
-        <Image
-          source={selectedImage}
-          style={styles.profileImage}
-        />
+        <Image source={selectedImage} style={styles.profileImage} />
         <Text style={styles.name}>{nombre}</Text>
 
-        <TouchableOpacity style={styles.secondaryButton} onPress={handleCambiarFoto}>
+        <TouchableOpacity
+          style={styles.secondaryButton}
+          onPress={handleCambiarFoto}
+        >
           <Text style={styles.buttonText}>Cambiar foto de perfil</Text>
         </TouchableOpacity>
 
@@ -105,11 +138,17 @@ navigation.goBack();
           />
         </View>
 
-        <TouchableOpacity style={styles.actionButton} onPress={() => navigation.navigate("Cambiarcontraseña")}>
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={() => navigation.navigate("Cambiarcontraseña")}
+        >
           <Text style={styles.buttonText}>Cambiar contraseña</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.actionButton, styles.saveButton]} onPress={handleGuardarCambios}>
+        <TouchableOpacity
+          style={[styles.actionButton, styles.saveButton]}
+          onPress={handleGuardarCambios}
+        >
           <Text style={styles.buttonText}>Guardar cambios</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -120,25 +159,25 @@ navigation.goBack();
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1e1e1e',
+    backgroundColor: "#1e1e1e",
   },
   scrollContent: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingTop: 60,
     paddingBottom: 40,
     paddingHorizontal: 15,
   },
   backButton: {
-    position: 'absolute',
+    position: "absolute",
     top: 40,
     left: 20,
-    backgroundColor: '#1E90FF',
+    backgroundColor: "#1E90FF",
     padding: 10,
     borderRadius: 20,
     zIndex: 1,
   },
   backText: {
-    color: '#fff',
+    color: "#fff",
   },
   profileImage: {
     width: 100,
@@ -147,67 +186,67 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   name: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 18,
     marginBottom: 10,
   },
   secondaryButton: {
-    backgroundColor: '#1E90FF',
+    backgroundColor: "#1E90FF",
     paddingVertical: 8,
     paddingHorizontal: 20,
     borderRadius: 10,
     marginBottom: 20,
   },
   infoBox: {
-    backgroundColor: '#2c2c2c',
+    backgroundColor: "#2c2c2c",
     borderRadius: 15,
     padding: 20,
-    width: '100%',
+    width: "100%",
     marginBottom: 20,
   },
   sectionTitle: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
     marginBottom: 15,
-    alignSelf: 'center',
+    alignSelf: "center",
   },
   input: {
-    backgroundColor: '#dcdcdc',
+    backgroundColor: "#dcdcdc",
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 8,
     marginBottom: 10,
-    color: '#000',
+    color: "#000",
   },
   row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   inputColumn: {
-    width: '48%',
+    width: "48%",
   },
   label: {
-    color: '#fff',
+    color: "#fff",
     marginBottom: 5,
   },
   presentation: {
     height: 90,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   actionButton: {
-    backgroundColor: '#1E90FF',
+    backgroundColor: "#1E90FF",
     paddingVertical: 12,
     paddingHorizontal: 25,
     borderRadius: 10,
     marginBottom: 15,
-    width: '80%',
-    alignItems: 'center',
+    width: "80%",
+    alignItems: "center",
   },
   saveButton: {
-    backgroundColor: '#32CD32',
+    backgroundColor: "#32CD32",
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
   },
 });
