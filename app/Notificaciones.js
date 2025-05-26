@@ -15,67 +15,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // Si usas React Navigation, descomenta la línea de abajo
 // import { useNavigation } from '@react-navigation/native';
 
-const notifications = [
-  {
-    name: "Sabo",
-    action: "Le gustó tu publicación",
-    image: require("../assets/imagen/WhatsApp Image 2025-03-02 at 7.38.32 PM.jpeg"),
-  },
-  {
-    name: "Bradley Cooper",
-    action: "Comentó tu publicación",
-    image: require("../assets/Avatars/WhatsApp Image 2025-03-03 at 11.13.49 AM.jpeg"),
-  },
-  {
-    name: "Victor García",
-    action: "Le gustó tu publicación",
-    image: require("../assets/Avatars/WhatsApp Image 2025-03-03 at 11.46.39 AM.jpeg"),
-  },
-  {
-    name: "Bradley Cooper",
-    action: "Comentó tu publicación",
-    image: require("../assets/imagen/GEThHg_bwAAdeR1.jpg"),
-  },
-  {
-    name: "Nami",
-    action: "Le gustó tu publicación",
-    image: require("../assets/imagen/WhatsApp Image 2025-03-03 at 5.33.56 PM.jpeg"),
-  },
-  {
-    name: "Monkey D Luffy",
-    action: "Le gustó tu publicación",
-    image: require("../assets/imagen/WhatsApp Image 2025-03-03 at 5.33.56 PM.jpeg"),
-  },
-  {
-    name: "Peter Parker",
-    action: "Dejó un comentario",
-    image: require("../assets/imagen/a-spectacular-gaming-adventure-with-this-stunning-4k-wallpaper-free-photo.jpg"),
-  },
-  {
-    name: "Bradley Cooper",
-    action: "Le gustó tu publicación",
-    image: require("../assets/imagen/WhatsApp Image 2025-03-03 at 5.32.18 PM.jpeg"),
-  },
-  {
-    name: "Joe Verde",
-    action: "Le gustó tu publicación",
-    image: require("../assets/imagen/jkcaptura (9).png"),
-  },
-];
-
-const NotificationItem = ({ name, action, image }) => {
-  // const navigation = useNavigation(); // Descomenta si usas navegación
-
-  const handlePress = () => {
-    // Aquí podrías navegar a otra pantalla con React Navigation:
-    // navigation.navigate('DetalleNotificacion', { user: name });
-
-    // Por ahora, solo mostramos una alerta
-    Alert.alert("Notificación", `${name} ${action}`);
-  };
-
+const NotificationItem = ({ name, action, image, onPress }) => {
   return (
-    <TouchableOpacity onPress={handlePress} style={styles.notificationItem}>
+    <TouchableOpacity onPress={onPress} style={styles.notificationItem}>
       <Image source={image} style={styles.profileImage} />
       <View>
         <Text style={styles.name}>{name}</Text>
@@ -86,18 +28,84 @@ const NotificationItem = ({ name, action, image }) => {
 };
 
 const NotificationsScreen = () => {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigation = useNavigation();
+
+  //función para obtener detalles de la publicación
+  const goToPostDetail = async (item) => {
+    try {
+      // Consultar detalles de la publicación usando el publicacion_id
+      const res = await fetch(`${URL_API}/todaslaspublicaciones`);
+      const posts = await res.json();
+      const post = posts.find((p) => p.id === item.publicacion_id);
+
+      if (!post) {
+        alert("No se encontró la publicación.");
+        return;
+      }
+
+      navigation.navigate("Fotocomentarios", {
+        uri: post.fotos ? `${URL_API}/posts/${post.fotos}` : null,
+        uriUser: post.foto_perfil
+          ? `${URL_API}/avatars/${post.foto_perfil}`
+          : null,
+        publicacion_id: post.id,
+        usuario: post.usuario,
+        contenido: post.description,
+        authorId: post.usuario_id,
+      });
+    } catch (e) {
+      alert("No se pudo cargar la publicación.");
+    }
+  };
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      const userId = await AsyncStorage.getItem("userId");
+      if (!userId) return;
+      try {
+        const res = await fetch(
+          `${URL_API}/notificaciones?usuario_id=${userId}`
+        );
+        const data = await res.json();
+        setNotifications(data);
+      } catch (e) {
+        setNotifications([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchNotifications();
+  }, []);
+
   return (
     <View style={styles.container}>
       <Navbar />
       <ScrollView style={styles.scroll}>
-        {notifications.map((item, index) => (
-          <NotificationItem
-            key={index}
-            name={item.name}
-            action={item.action}
-            image={item.image}
-          />
-        ))}
+        {loading ? (
+          <Text style={{ color: "white", textAlign: "center", marginTop: 20 }}>
+            Cargando notificaciones...
+          </Text>
+        ) : notifications.length === 0 ? (
+          <Text style={{ color: "white", textAlign: "center", marginTop: 20 }}>
+            No tienes notificaciones.
+          </Text>
+        ) : (
+          notifications.map((item, index) => (
+            <NotificationItem
+              key={item.id}
+              name={`${item.emisor_nombre} ${item.emisor_apellido}`}
+              action={item.mensaje}
+              image={
+                item.foto_perfil
+                  ? { uri: `${URL_API}/avatars/${item.foto_perfil}` }
+                  : null
+              }
+              onPress={() => goToPostDetail(item)}
+            />
+          ))
+        )}
       </ScrollView>
     </View>
   );
@@ -119,19 +127,7 @@ const Navbar = () => {
 
   return (
     <View style={styles.navbarContainer}>
-      <View style={styles.topBar}>
-        <Text style={styles.logo}>More</Text>
-        {/* <TouchableOpacity onPress={() => navigation.navigate('Mensajes')}> */}
-        {/* Esto solo muestra alerta en lugar de navegación */}
-        <TouchableOpacity onPress={() => navigation.navigate("Chats")}>
-          <Icon
-            name="comment"
-            size={24}
-            color="white"
-            style={styles.chatIcon}
-          />
-        </TouchableOpacity>
-      </View>
+      <View style={styles.topBar}></View>
 
       <View style={styles.navbar}>
         {/* <TouchableOpacity onPress={() => navigation.navigate('Home')}> */}

@@ -34,6 +34,94 @@ const server = http.createServer(async (req, res) => {
 
   /*ENDPOINTS*/
 
+  if (req.url === "/publicar" && req.method === "POST") {
+    const form = new formidable.IncomingForm();
+    const postsDir = path.join(__dirname, "posts");
+    if (!fs.existsSync(postsDir)) {
+      fs.mkdirSync(postsDir);
+    }
+    form.uploadDir = postsDir;
+    form.keepExtensions = true;
+
+    form.parse(req, async (err, fields, files) => {
+      if (err) {
+        res.writeHead(500);
+        res.end(
+          JSON.stringify({
+            status: "error",
+            message: "Error parsing form data",
+          })
+        );
+        return;
+      }
+
+      const usuario_id = fields.usuario_id;
+      const contenido = fields.contenido;
+      const etiqueta = fields.etiqueta;
+      const file = files.image;
+
+      if (!usuario_id || !contenido || !file) {
+        res.writeHead(400);
+        res.end(
+          JSON.stringify({
+            status: "error",
+            message: "usuario_id, contenido y una imagen son requeridos",
+            data: fields,
+          })
+        );
+        return;
+      }
+
+      try {
+        // Crear la publicación primero (fotos será null temporalmente)
+        const sql = `INSERT INTO "Publicacion" (usuario_id, description, etiquetas, fecha_publicacion)
+          VALUES ($1, $2, $3, CURRENT_TIMESTAMP) RETURNING id`;
+        const result = await pool.query(sql, [usuario_id, contenido, etiqueta]);
+
+        if (!result || result.rows.length === 0) {
+          throw new Error("No se retornaron datos después de la inserción");
+        }
+
+        const publicacionId = result.rows[0].id;
+        const ext = path.extname(
+          file.originalFilename || file.newFilename || ""
+        );
+        const fileName = `${publicacionId}${ext}`;
+        const filePath = path.join(postsDir, fileName);
+
+        // Guardar la imagen con el nombre del id de la publicación
+        fs.renameSync(file.filepath, filePath);
+
+        // Actualizar la columna fotos con el nombre de la imagen
+        await pool.query(`UPDATE "Publicacion" SET fotos = $1 WHERE id = $2`, [
+          fileName,
+          publicacionId,
+        ]);
+
+        res.writeHead(200);
+        res.end(
+          JSON.stringify({
+            status: "200",
+            message: "Publicación creada",
+            data: { id: publicacionId, foto: fileName },
+          })
+        );
+      } catch (error) {
+        console.error("Error al insertar publicación:", error);
+        res.writeHead(500);
+        res.end(
+          JSON.stringify({
+            status: "500",
+            message: "Error al agregar publicación",
+            error: error.message,
+          })
+        );
+      }
+    });
+    return;
+  }
+
+  /* Endpoint para subir la imagen de perfil */
   if (req.url === "/upload" && req.method === "POST") {
     const form = new formidable.IncomingForm();
     form.uploadDir = avatarsDir;
@@ -113,6 +201,23 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // Servir imágenes de la carpeta posts de forma estática
+  if (req.url.startsWith("/posts/") && req.method === "GET") {
+    const fileName = req.url.split("/posts/")[1];
+    const filePath = path.join(__dirname, "posts", fileName);
+
+    if (fs.existsSync(filePath)) {
+      const stream = fs.createReadStream(filePath);
+      res.writeHead(200, { "Content-Type": "image/jpeg" });
+      stream.pipe(res);
+    } else {
+      res.writeHead(404);
+      res.end(JSON.stringify({ error: "Imagen no encontrada" }));
+    }
+    return;
+  }
+
+  /* Endpoint para obtener la imagen del perfil de forma statica */
   if (req.url.startsWith("/avatars/") && req.method === "GET") {
     const fileName = req.url.split("/avatars/")[1];
     const filePath = path.join(avatarsDir, fileName);
@@ -133,6 +238,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  /*registrarse*/
   if (req.url === "/registrar" && req.method === "POST") {
     let body = "";
     req.on("data", (chunk) => {
@@ -187,6 +293,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  /*endpoint para validar el logueo*/
   if (req.url === "/login" && req.method === "POST") {
     let body = "";
     req.on("data", (chunk) => {
@@ -220,13 +327,14 @@ const server = http.createServer(async (req, res) => {
               JSON.stringify({
                 status: "200",
                 message: "Login exitoso",
-                token, // Enviar el token al cliente
+                token,
                 data: {
                   nombre: user.nombre,
                   apellido: user.apellido,
                   email: user.email,
                   telefono: user.telefono,
                   foto_perfil: user.foto_perfil,
+                  id: user.id,
                   quotes: user.quotes,
                 },
               })
@@ -261,6 +369,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  /*endpoint para probar el backend*/
   if (req.url === "/api" && req.method === "GET") {
     res.writeHead(200, { "Content-Type": "text/plain" });
     res.end("Hello, browser!");
@@ -304,7 +413,7 @@ const server = http.createServer(async (req, res) => {
           );
         } else {
           // El correo no existe
-          res.writeHead(404); // Usar 404 Not Found para indicar que el recurso (usuario con ese email) no fue encontrado
+          res.writeHead(404);
           res.end(
             JSON.stringify({
               exists: false,
@@ -423,7 +532,7 @@ const server = http.createServer(async (req, res) => {
             JSON.stringify({ valid: true, message: "Respuesta correcta." })
           );
         } else {
-          res.writeHead(400); // O 401 si prefieres para "no autorizado" por respuesta incorrecta
+          res.writeHead(400);
           res.end(
             JSON.stringify({
               valid: false,
@@ -506,6 +615,439 @@ const server = http.createServer(async (req, res) => {
         );
       }
     });
+    return;
+  }
+
+  // Endpoint para obtener publicaciones por usuario_id
+  if (req.url.startsWith("/publicaciones") && req.method === "GET") {
+    const url = require("url");
+    const queryObject = url.parse(req.url, true).query;
+    const usuario_id = queryObject.usuario_id;
+
+    if (!usuario_id) {
+      res.writeHead(400);
+      res.end(
+        JSON.stringify({ status: "error", message: "usuario_id es requerido" })
+      );
+      return;
+    }
+
+    try {
+      const sql = `SELECT id, fotos FROM "Publicacion" WHERE usuario_id = $1 ORDER BY fecha_publicacion DESC`;
+      pool
+        .query(sql, [usuario_id])
+        .then((result) => {
+          res.writeHead(200);
+          res.end(JSON.stringify(result.rows));
+        })
+        .catch((error) => {
+          console.error("Error al obtener publicaciones:", error);
+          res.writeHead(500);
+          res.end(
+            JSON.stringify({
+              status: "error",
+              message: "Error al obtener publicaciones",
+            })
+          );
+        });
+    } catch (error) {
+      console.error("Error general en publicaciones:", error);
+      res.writeHead(500);
+      res.end(
+        JSON.stringify({
+          status: "error",
+          message: "Error interno del servidor",
+        })
+      );
+    }
+    return;
+  }
+
+  // Endpoint para obtener todas las publicaciones con etiquetas y fotos
+  if (req.url.startsWith("/todaslaspublicaciones") && req.method === "GET") {
+    try {
+      const sql = `SELECT p.id, p.fotos, p.description, p.fecha_publicacion, p.etiquetas,
+      CONCAT(u.nombre, ' ', u.apellido) AS usuario,
+      u.foto_perfil,
+      p.usuario_id
+      FROM "Publicacion" p
+      JOIN "Usuario" u ON p.usuario_id = u.id
+      ORDER BY p.fecha_publicacion DESC`;
+      const result = await pool.query(sql);
+
+      res.writeHead(200);
+      res.end(JSON.stringify(result.rows));
+    } catch (error) {
+      console.error("Error al obtener todas las publicaciones:", error);
+      res.writeHead(500);
+      res.end(
+        JSON.stringify({
+          status: "error",
+          message: "Error al obtener publicaciones",
+        })
+      );
+    }
+    return;
+  }
+
+  // Endpoint para obtener todos los comentarios de una publicación con datos del usuario
+  if (req.url.startsWith("/comentarios") && req.method === "GET") {
+    const url = require("url");
+    const queryObject = url.parse(req.url, true).query;
+    const publicacion_id = queryObject.publicacion_id;
+
+    if (!publicacion_id) {
+      res.writeHead(400);
+      res.end(
+        JSON.stringify({
+          status: "error",
+          message: "publicacion_id es requerido",
+        })
+      );
+      return;
+    }
+
+    try {
+      const sql = `
+        SELECT c.id, c.texto AS Comentario, c.fecha, c.usuario_id,
+               u.nombre, u.apellido
+        FROM "Comentario" c
+        JOIN "Usuario" u ON c.usuario_id = u.id
+        WHERE c.publicacion_id = $1
+        ORDER BY c.fecha ASC
+      `;
+      pool
+        .query(sql, [publicacion_id])
+        .then((result) => {
+          res.writeHead(200);
+          res.end(JSON.stringify(result.rows));
+        })
+        .catch((error) => {
+          console.error("Error al obtener comentarios:", error);
+          res.writeHead(500);
+          res.end(
+            JSON.stringify({
+              status: "error",
+              message: "Error al obtener comentarios",
+            })
+          );
+        });
+    } catch (error) {
+      console.error("Error general en comentarios:", error);
+      res.writeHead(500);
+      res.end(
+        JSON.stringify({
+          status: "error",
+          message: "Error interno del servidor",
+        })
+      );
+    }
+    return;
+  }
+
+  // Endpoint para agregar un comentario a una publicación
+  if (req.url === "/agregar-comentario" && req.method === "POST") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk.toString();
+    });
+
+    req.on("end", async () => {
+      try {
+        const { publicacion_id, usuario_id, comentario } = JSON.parse(body);
+
+        if (!publicacion_id || !usuario_id || !comentario) {
+          res.writeHead(400);
+          res.end(
+            JSON.stringify({
+              status: "error",
+              message: "publicacion_id, usuario_id y comentario son requeridos",
+            })
+          );
+          return;
+        }
+
+        const sql = `INSERT INTO "Comentario" (usuario_id,publicacion_id, texto, fecha)
+                     VALUES ($1, $2, $3, CURRENT_TIMESTAMP) RETURNING id`;
+        const result = await pool.query(sql, [
+          usuario_id,
+          publicacion_id,
+          comentario,
+        ]);
+
+        res.writeHead(200);
+        res.end(
+          JSON.stringify({
+            status: "success",
+            message: "Comentario agregado",
+            data: { id: result.rows[0].id },
+          })
+        );
+      } catch (error) {
+        console.error("Error al agregar comentario:", error);
+        res.writeHead(500);
+        res.end(
+          JSON.stringify({
+            status: "error",
+            message: "Error al agregar comentario",
+          })
+        );
+      }
+    });
+    return;
+  }
+
+  // Endpoint para agregar / quitar los guardados de un usuario
+  if (req.url === "/guardar" && req.method === "POST") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk.toString();
+    });
+    req.on("end", async () => {
+      try {
+        const { usuario_id, publicacion_id } = JSON.parse(body);
+        if (!usuario_id || !publicacion_id) {
+          res.writeHead(400);
+          res.end(
+            JSON.stringify({
+              status: "error",
+              message: "usuario_id y publicacion_id son requeridos",
+            })
+          );
+          return;
+        }
+        // Verificar si ya existe el guardado
+        const checkSql = `SELECT id FROM "Guardar" WHERE idpublicacion = $1 AND idusuario = $2`;
+        const check = await pool.query(checkSql, [publicacion_id, usuario_id]);
+        if (check.rows.length > 0) {
+          // Si existe, eliminar (quitar guardado)
+          await pool.query(
+            `DELETE FROM "Guardar" WHERE idusuario = $1 AND idpublicacion = $2`,
+            [usuario_id, publicacion_id]
+          );
+          res.writeHead(200);
+          res.end(JSON.stringify({ status: "success", saved: false }));
+        } else {
+          // Si no existe, insertar (guardar)
+          await pool.query(
+            `INSERT INTO "Guardar" (idusuario, idpublicacion) VALUES ($1, $2)`,
+            [usuario_id, publicacion_id]
+          );
+          res.writeHead(200);
+          res.end(JSON.stringify({ status: "success", saved: true }));
+        }
+      } catch (error) {
+        console.error("Error en toggle-save:", error);
+        res.writeHead(500);
+        res.end(
+          JSON.stringify({ status: "error", message: "Error en toggle-save" })
+        );
+      }
+    });
+    return;
+  }
+
+  // Endpoint para agregar o quitar un "Me Gusta" (like)
+  if (req.url === "/like" && req.method === "POST") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk.toString();
+    });
+    req.on("end", async () => {
+      try {
+        const { usuario_id, publicacion_id } = JSON.parse(body);
+        if (!usuario_id || !publicacion_id) {
+          res.writeHead(400);
+          res.end(
+            JSON.stringify({
+              status: "error",
+              message: "usuario_id y publicacion_id son requeridos",
+            })
+          );
+          return;
+        }
+        // Verificar si ya existe el like
+        const checkSql = `SELECT id FROM "MeGusta" WHERE idusuario = $1 AND idpublicacion = $2`;
+        const check = await pool.query(checkSql, [usuario_id, publicacion_id]);
+        if (check.rows.length > 0) {
+          await pool.query(
+            `DELETE FROM "MeGusta" WHERE idusuario = $1 AND idpublicacion = $2`,
+            [usuario_id, publicacion_id]
+          );
+          res.writeHead(200);
+          res.end(JSON.stringify({ status: "success", liked: false }));
+        } else {
+          // Si no existe, insertar (agregar like)
+          await pool.query(
+            `INSERT INTO "MeGusta" (idusuario, idpublicacion) VALUES ($1, $2)`,
+            [usuario_id, publicacion_id]
+          );
+          res.writeHead(200);
+          res.end(JSON.stringify({ status: "success", liked: true }));
+        }
+      } catch (error) {
+        console.error("Error en like:", error);
+        res.writeHead(500);
+        res.end(JSON.stringify({ status: "error", message: "Error en like" }));
+      }
+    });
+    return;
+  }
+
+  // Endpoint para obtener las publicaciones guardadas por un usuario
+  if (req.url.startsWith("/guardadas") && req.method === "GET") {
+    const url = require("url");
+    const queryObject = url.parse(req.url, true).query;
+    const usuario_id = queryObject.usuario_id;
+
+    if (!usuario_id) {
+      res.writeHead(400);
+      res.end(
+        JSON.stringify({ status: "error", message: "usuario_id es requerido" })
+      );
+      return;
+    }
+
+    try {
+      // Trae las publicaciones guardadas por el usuario, incluyendo la(s) foto(s)
+      const sql = `
+        SELECT p.id, p.fotos
+        FROM "Guardar" g
+        JOIN "Publicacion" p ON g.idpublicacion = p.id
+        WHERE g.idusuario = $1
+        ORDER BY p.fecha_publicacion DESC
+      `;
+      pool
+        .query(sql, [usuario_id])
+        .then((result) => {
+          res.writeHead(200);
+          res.end(JSON.stringify(result.rows));
+        })
+        .catch((error) => {
+          console.error("Error al obtener publicaciones guardadas:", error);
+          res.writeHead(500);
+          res.end(
+            JSON.stringify({
+              status: "error",
+              message: "Error al obtener publicaciones guardadas",
+            })
+          );
+        });
+    } catch (error) {
+      console.error("Error general en guardadas:", error);
+      res.writeHead(500);
+      res.end(
+        JSON.stringify({
+          status: "error",
+          message: "Error interno del servidor",
+        })
+      );
+    }
+    return;
+  }
+
+  // Endpoint para agregar una notificación
+  if (req.url === "/agregar-notificacion" && req.method === "POST") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk.toString();
+    });
+    req.on("end", async () => {
+      try {
+        const { tipo, idusuario, idpublicacion, mensaje } = JSON.parse(body);
+        if (!tipo || !idusuario || !idpublicacion || !mensaje) {
+          res.writeHead(400);
+          res.end(
+            JSON.stringify({
+              status: "error",
+              message:
+                "tipo, idusuario, idpublicacion y mensaje son requeridos",
+            })
+          );
+          return;
+        }
+        const sql = `INSERT INTO "Notificacion" (tipo, usuario_id, publicacion_id, mensaje, fecha)
+                     VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP) RETURNING id`;
+        const result = await pool.query(sql, [
+          tipo,
+          idusuario,
+          idpublicacion,
+          mensaje,
+        ]);
+        res.writeHead(200);
+        res.end(
+          JSON.stringify({
+            status: "success",
+            message: "Notificación agregada",
+            data: { id: result.rows[0].id },
+          })
+        );
+      } catch (error) {
+        console.error("Error al agregar notificación:", error);
+        res.writeHead(500);
+        res.end(
+          JSON.stringify({
+            status: "error",
+            message: "Error al agregar notificación",
+          })
+        );
+      }
+    });
+    return;
+  }
+
+  // Endpoint para obtener notificaciones de un usuario
+  if (req.url.startsWith("/notificaciones") && req.method === "GET") {
+    const url = require("url");
+    const queryObject = url.parse(req.url, true).query;
+    const usuario_id = queryObject.usuario_id;
+
+    if (!usuario_id) {
+      res.writeHead(400);
+      res.end(
+        JSON.stringify({ status: "error", message: "usuario_id es requerido" })
+      );
+      return;
+    }
+
+    try {
+      // Trae las notificaciones donde el usuario es dueño de la publicación
+      const sql = `
+        SELECT n.id, n.tipo, n.mensaje, n.fecha, n.publicacion_id, n.usuario_id AS emisor_id,
+               u.nombre AS emisor_nombre, u.apellido AS emisor_apellido, u.foto_perfil,
+               p.fotos AS publicacion_foto
+        FROM "Notificacion" n
+        JOIN "Publicacion" p ON n.publicacion_id = p.id
+        JOIN "Usuario" u ON n.usuario_id = u.id
+        WHERE p.usuario_id = $1
+        ORDER BY n.fecha DESC
+      `;
+      pool
+        .query(sql, [usuario_id])
+        .then((result) => {
+          res.writeHead(200);
+          res.end(JSON.stringify(result.rows));
+        })
+        .catch((error) => {
+          console.error("Error al obtener notificaciones:", error);
+          res.writeHead(500);
+          res.end(
+            JSON.stringify({
+              status: "error",
+              message: "Error al obtener notificaciones",
+            })
+          );
+        });
+    } catch (error) {
+      console.error("Error general en notificaciones:", error);
+      res.writeHead(500);
+      res.end(
+        JSON.stringify({
+          status: "error",
+          message: "Error interno del servidor",
+        })
+      );
+    }
     return;
   }
 

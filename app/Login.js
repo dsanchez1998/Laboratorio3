@@ -30,6 +30,7 @@ export default function Login() {
       if (answer.status == "200") {
         // Guarda el token JWT en AsyncStorage
         await AsyncStorage.setItem("token", answer.token);
+        await AsyncStorage.setItem("userId", answer.data.id.toString());
         await AsyncStorage.setItem(
           "foto_perfil",
           answer.data.foto_perfil.toString()
@@ -42,7 +43,7 @@ export default function Login() {
 
         await AsyncStorage.setItem("descripcion", answer.data.quotes);
 
-        alert("Bienvenido " + answer.data.nombre);
+        alert("Bienvenido(a) " + answer.data.nombre);
         navigation.navigate("Inicio");
       } else {
         alert("error: " + answer.message);
@@ -63,6 +64,7 @@ export default function Login() {
           source={require("../assets/Logo2.png")}
           className="w-[200px] mb-16"
         />
+
         <StyledText className="text-2xl font-bold text-white text-center mb-2">
           Inicia sesión con tu cuenta
         </StyledText>
