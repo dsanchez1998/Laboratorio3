@@ -7,29 +7,26 @@ import NewPassword from "../app/NewPassword";
 import RecoverPassword from "../app/RecoverPassword";
 import RecoverPasswordCode from "../app/RecoverPasswordCode";
 import RegisterUpload from "../app/RegisterUpload";
-import Home from "../app/inicio"
-import Buscar from "../app/Buscar"
-import Agree from "../app/Agregar"
-import Notion from "../app/Notificaciones"
-import Perf from "../app/Perfil"
-import Chat from "../app/Chats"
-import Chat2 from "../app/Chats2"
-import Yerika from "../app/Yerika"
-import Buscarfo from "../app/Buscarfoto"
-import Confi from "../app/Configuracion"
-import Confi2 from "../app/Configuracion2"
-import Confi3 from "../app/Configuracion3"
-import Confi4 from "../app/Configuracion4"
-import contac from "../app/Contactenos"
-import cambi from "../app/Cambiarcontraseña"
-import olvi from "../app/Olvidarcontraseña"
-import olvido from "../app/Olvidocontraseña2"
-import contraseñan from "../app/Nuevacontraseña"
-import Perfil2 from "../app/Perfil2"
-import Fotocomen from "../app/fotocomentarios"
-import Buscarfoto from "../app/Buscarfoto"
-
-
+import Home from "../app/inicio";
+import Buscar from "../app/Buscar";
+import Agree from "../app/Agregar";
+import Notion from "../app/Notificaciones";
+import Perf from "../app/Perfil";
+import Chat from "../app/Chats";
+import Chat2 from "../app/Chats2";
+import Yerika from "../app/Yerika";
+import Buscarfo from "../app/Buscarfoto";
+import Confi from "../app/Configuracion";
+import Confi2 from "../app/Configuracion2";
+import Confi3 from "../app/Configuracion3";
+import Confi4 from "../app/Configuracion4";
+import contac from "../app/Contactenos";
+import cambi from "../app/Cambiarcontraseña";
+import olvi from "../app/Olvidarcontraseña";
+import olvido from "../app/Olvidocontraseña2";
+import contraseñan from "../app/Nuevacontraseña";
+import Fotocomen from "../app/fotocomentarios";
+import Buscarfoto from "../app/Buscarfoto";
 
 const Stack = createNativeStackNavigator();
 
@@ -61,10 +58,9 @@ export default function AppNavigator() {
         <Stack.Screen name="Olvidarcontraseña" component={olvi} />
         <Stack.Screen name="Olvidocontraseña2" component={olvido} />
         <Stack.Screen name="Nuevacontraseña" component={contraseñan} />
-        <Stack.Screen name="Perfil2" component={Perfil2} />
         <Stack.Screen name="Fotocomentarios" component={Fotocomen} />
         <Stack.Screen name="Buscarfoto" component={Buscarfoto} />
-       
+
         <Stack.Screen
           name="RecoverPasswordCode"
           component={RecoverPasswordCode}

@@ -14,39 +14,62 @@ import { URL_API } from "@env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ProfileScreen = ({ navigation }) => {
-  // Cambiado a 'photos' para que "Tus fotos" esté activo por defecto
   const [activeTab, setActiveTab] = useState("photos");
   const [selectedImage, setSelectedImage] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [fotoPerfil, setFotoPerfil] = useState(null);
   const [nombreCompleto, setNombreCompleto] = useState(null);
   const [descripcion, setDescripcion] = useState(null);
+  const [uploadedImages, setUploadedImages] = useState([]);
+  const [savedImages, setsavedImages] = useState([]);
 
   useEffect(() => {
-    const cargarFotoPerfil = async () => {
-      const foto = await AsyncStorage.getItem("foto_perfil");
-      const nombreCompleto = await AsyncStorage.getItem("nombreCompleto");
-      const descripcion = await AsyncStorage.getItem("descripcion");
-      setNombreCompleto(nombreCompleto);
-      setFotoPerfil(foto);
-      setDescripcion(descripcion);
+    const cargarDatos = async () => {
+      try {
+        const foto = await AsyncStorage.getItem("foto_perfil");
+        const nombreCompleto = await AsyncStorage.getItem("nombreCompleto");
+        const descripcion = await AsyncStorage.getItem("descripcion");
+        setNombreCompleto(nombreCompleto);
+        setFotoPerfil(foto);
+        setDescripcion(descripcion);
+
+        const usuario_id = await AsyncStorage.getItem("userId");
+        // Publicadas
+        const response = await fetch(
+          `${URL_API}/publicaciones?usuario_id=${usuario_id}`
+        );
+        const data = await response.json();
+
+        const imagenes = data.flatMap((pub) =>
+          Array.isArray(pub.fotos)
+            ? pub.fotos.map((nombre) => `${URL_API}/posts/${nombre}`)
+            : [`${URL_API}/posts/${pub.fotos}`]
+        );
+        setUploadedImages(imagenes);
+
+        // Guardadas
+        const savedResponse = await fetch(
+          `${URL_API}/guardadas?usuario_id=${usuario_id}`
+        );
+        const savedData = await savedResponse.json();
+
+        const savedImgs = savedData.flatMap((pub) =>
+          Array.isArray(pub.fotos)
+            ? pub.fotos.map((nombre) => `${URL_API}/posts/${nombre}`)
+            : [`${URL_API}/posts/${pub.fotos}`]
+        );
+        setsavedImages(savedImgs);
+      } catch (error) {
+        console.error("Error cargando datos del perfil:", error);
+      }
     };
-    cargarFotoPerfil();
+
+    cargarDatos();
   }, []);
 
   const imageUrl = fotoPerfil ? `${URL_API}/avatars/${fotoPerfil}` : null;
 
-  const images = [
-    require("../assets/imagen/3af3aba6a0ecec50f9dbd62f5684da4f.jpg"),
-    require("../assets/imagen/daniel.jpeg"),
-    require("../assets/imagen/_fea95260-b145-4605-bced-8f13f312f751.jpg"),
-    require("../assets/imagen/WhatsApp Image 2024-01-26 at 10.56.01 AM.jpeg"),
-    require("../assets/imagen/Mre.png"),
-    require("../assets/imagen/montanas-nevadas-en-el-bosque-9792.webp"),
-  ];
-  const handleContinuar = () => {
-    navigation.navigate("Perfil2");
-  };
+  const images = activeTab === "photos" ? uploadedImages : savedImages;
 
   const handleBack = () => {
     navigation.goBack();
@@ -114,7 +137,7 @@ const ProfileScreen = ({ navigation }) => {
             styles.tabButton,
             activeTab === "saved" ? styles.activeTab : styles.inactiveTab,
           ]}
-          onPress={handleContinuar}
+          onPress={() => setActiveTab("saved")}
         >
           <Text
             style={[
@@ -137,7 +160,10 @@ const ProfileScreen = ({ navigation }) => {
             style={styles.photoContainer}
             onPress={() => openImage(image)}
           >
-            <Image source={image} style={styles.photo} />
+            <Image
+              source={typeof image === "string" ? { uri: image } : image}
+              style={styles.photo}
+            />
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -150,14 +176,20 @@ const ProfileScreen = ({ navigation }) => {
         onRequestClose={closeImage}
       >
         <Pressable style={styles.modalContainer} onPress={closeImage}>
-          <Image source={selectedImage} style={styles.modalImage} />
+          <Image
+            source={
+              typeof selectedImage === "string"
+                ? { uri: selectedImage }
+                : selectedImage
+            }
+            style={styles.modalImage}
+          />
         </Pressable>
       </Modal>
     </View>
   );
 };
 
-// Los estilos permanecen exactamente iguales
 const styles = StyleSheet.create({
   container: {
     flex: 1,
