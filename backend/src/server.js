@@ -34,6 +34,94 @@ const server = http.createServer(async (req, res) => {
 
   /*ENDPOINTS*/
 
+  if (req.url === "/publicar" && req.method === "POST") {
+    const form = new formidable.IncomingForm();
+    const postsDir = path.join(__dirname, "posts");
+    if (!fs.existsSync(postsDir)) {
+      fs.mkdirSync(postsDir);
+    }
+    form.uploadDir = postsDir;
+    form.keepExtensions = true;
+
+    form.parse(req, async (err, fields, files) => {
+      if (err) {
+        res.writeHead(500);
+        res.end(
+          JSON.stringify({
+            status: "error",
+            message: "Error parsing form data",
+          })
+        );
+        return;
+      }
+
+      const usuario_id = fields.usuario_id;
+      const contenido = fields.contenido;
+      const etiqueta = fields.etiqueta;
+      const file = files.image;
+
+      if (!usuario_id || !contenido || !file) {
+        res.writeHead(400);
+        res.end(
+          JSON.stringify({
+            status: "error",
+            message: "usuario_id, contenido y una imagen son requeridos",
+            data: fields,
+          })
+        );
+        return;
+      }
+
+      try {
+        // Crear la publicación primero (fotos será null temporalmente)
+        const sql = `INSERT INTO "Publicacion" (usuario_id, description, etiquetas, fecha_publicacion)
+          VALUES ($1, $2, $3, CURRENT_TIMESTAMP) RETURNING id`;
+        const result = await pool.query(sql, [usuario_id, contenido, etiqueta]);
+
+        if (!result || result.rows.length === 0) {
+          throw new Error("No se retornaron datos después de la inserción");
+        }
+
+        const publicacionId = result.rows[0].id;
+        const ext = path.extname(
+          file.originalFilename || file.newFilename || ""
+        );
+        const fileName = `${publicacionId}${ext}`;
+        const filePath = path.join(postsDir, fileName);
+
+        // Guardar la imagen con el nombre del id de la publicación
+        fs.renameSync(file.filepath, filePath);
+
+        // Actualizar la columna fotos con el nombre de la imagen
+        await pool.query(`UPDATE "Publicacion" SET fotos = $1 WHERE id = $2`, [
+          fileName,
+          publicacionId,
+        ]);
+
+        res.writeHead(200);
+        res.end(
+          JSON.stringify({
+            status: "200",
+            message: "Publicación creada",
+            data: { id: publicacionId, foto: fileName },
+          })
+        );
+      } catch (error) {
+        console.error("Error al insertar publicación:", error);
+        res.writeHead(500);
+        res.end(
+          JSON.stringify({
+            status: "500",
+            message: "Error al agregar publicación",
+            error: error.message,
+          })
+        );
+      }
+    });
+    return;
+  }
+
+  /* Endpoint para subir la imagen de perfil */
   if (req.url === "/upload" && req.method === "POST") {
     const form = new formidable.IncomingForm();
     form.uploadDir = avatarsDir;
@@ -113,6 +201,23 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // Servir imágenes de la carpeta posts de forma estática
+  if (req.url.startsWith("/posts/") && req.method === "GET") {
+    const fileName = req.url.split("/posts/")[1];
+    const filePath = path.join(__dirname, "posts", fileName);
+
+    if (fs.existsSync(filePath)) {
+      const stream = fs.createReadStream(filePath);
+      res.writeHead(200, { "Content-Type": "image/jpeg" });
+      stream.pipe(res);
+    } else {
+      res.writeHead(404);
+      res.end(JSON.stringify({ error: "Imagen no encontrada" }));
+    }
+    return;
+  }
+
+  /* Endpoint para obtener la imagen del perfil de forma statica */
   if (req.url.startsWith("/avatars/") && req.method === "GET") {
     const fileName = req.url.split("/avatars/")[1];
     const filePath = path.join(avatarsDir, fileName);
@@ -133,6 +238,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  /*registrarse*/
   if (req.url === "/registrar" && req.method === "POST") {
     let body = "";
     req.on("data", (chunk) => {
@@ -187,6 +293,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  /*endpoint para validar el logueo*/
   if (req.url === "/login" && req.method === "POST") {
     let body = "";
     req.on("data", (chunk) => {
@@ -227,6 +334,7 @@ const server = http.createServer(async (req, res) => {
                   email: user.email,
                   telefono: user.telefono,
                   foto_perfil: user.foto_perfil,
+                  id: user.id,
                   quotes: user.quotes,
                 },
               })
@@ -261,6 +369,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  /*endpoint para probar el backend*/
   if (req.url === "/api" && req.method === "GET") {
     res.writeHead(200, { "Content-Type": "text/plain" });
     res.end("Hello, browser!");
@@ -506,6 +615,77 @@ const server = http.createServer(async (req, res) => {
         );
       }
     });
+    return;
+  }
+
+  // Endpoint para obtener publicaciones por usuario_id
+  if (req.url.startsWith("/publicaciones") && req.method === "GET") {
+    const url = require("url");
+    const queryObject = url.parse(req.url, true).query;
+    const usuario_id = queryObject.usuario_id;
+
+    if (!usuario_id) {
+      res.writeHead(400);
+      res.end(
+        JSON.stringify({ status: "error", message: "usuario_id es requerido" })
+      );
+      return;
+    }
+
+    try {
+      const sql = `SELECT id, fotos FROM "Publicacion" WHERE usuario_id = $1 ORDER BY fecha_publicacion DESC`;
+      pool
+        .query(sql, [usuario_id])
+        .then((result) => {
+          res.writeHead(200);
+          res.end(JSON.stringify(result.rows));
+        })
+        .catch((error) => {
+          console.error("Error al obtener publicaciones:", error);
+          res.writeHead(500);
+          res.end(
+            JSON.stringify({
+              status: "error",
+              message: "Error al obtener publicaciones",
+            })
+          );
+        });
+    } catch (error) {
+      console.error("Error general en publicaciones:", error);
+      res.writeHead(500);
+      res.end(
+        JSON.stringify({
+          status: "error",
+          message: "Error interno del servidor",
+        })
+      );
+    }
+    return;
+  }
+
+  // Endpoint para obtener todas las publicaciones con etiquetas y fotos
+  if (req.url.startsWith("/todaslaspublicaciones") && req.method === "GET") {
+    try {
+      // Asegúrate de que la tabla Publicacion tenga una columna 'etiquetas' (tipo texto o array)
+      const sql = `SELECT p.id, p.fotos, p.description, p.fecha_publicacion, p.etiquetas,
+      CONCAT(u.nombre, ' ', u.apellido) AS usuario
+      FROM "Publicacion" p
+      JOIN "Usuario" u ON p.usuario_id = u.id
+      ORDER BY p.fecha_publicacion DESC`;
+      const result = await pool.query(sql);
+
+      res.writeHead(200);
+      res.end(JSON.stringify(result.rows));
+    } catch (error) {
+      console.error("Error al obtener todas las publicaciones:", error);
+      res.writeHead(500);
+      res.end(
+        JSON.stringify({
+          status: "error",
+          message: "Error al obtener publicaciones",
+        })
+      );
+    }
     return;
   }
 

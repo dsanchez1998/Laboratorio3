@@ -119,19 +119,7 @@ const Navbar = () => {
 
   return (
     <View style={styles.navbarContainer}>
-      <View style={styles.topBar}>
-        <Text style={styles.logo}>More</Text>
-        {/* <TouchableOpacity onPress={() => navigation.navigate('Mensajes')}> */}
-        {/* Esto solo muestra alerta en lugar de navegación */}
-        <TouchableOpacity onPress={() => navigation.navigate("Chats")}>
-          <Icon
-            name="comment"
-            size={24}
-            color="white"
-            style={styles.chatIcon}
-          />
-        </TouchableOpacity>
-      </View>
+      <View style={styles.topBar}></View>
 
       <View style={styles.navbar}>
         {/* <TouchableOpacity onPress={() => navigation.navigate('Home')}> */}
