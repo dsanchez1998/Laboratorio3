@@ -14,9 +14,104 @@ import { useNavigation } from "@react-navigation/native";
 import { URL_API } from "@env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const Post = ({ name, text, profileImage, postImage }) => {
+const Post = ({
+  name,
+  text,
+  profileImage,
+  postImage,
+  publicacionId,
+  authorId,
+}) => {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [usuarioId, setUsuarioId] = useState(null);
+  const [usuarioName, setUsuarioName] = useState(null);
+  const navigation = useNavigation();
+
+  useEffect(() => {
+
+    const cargarUsuarioId = async () => {
+      const token = await AsyncStorage.getItem("token");
+      if(!token){
+        navigation.navigate("Login");
+      }
+      
+      const id = await AsyncStorage.getItem("userId");
+      setUsuarioId(id);
+      const name = await AsyncStorage.getItem("nombreCompleto");
+      setUsuarioName(name);
+    };
+    cargarUsuarioId();
+  }, []);
+
+  const toggleLike = async () => {
+    if (!usuarioId || !publicacionId) return;
+    try {
+      const res = await fetch(`${URL_API}/like`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          usuario_id: usuarioId,
+          publicacion_id: publicacionId,
+        }),
+      });
+      const data = await res.json();
+      setLiked(data.liked);
+      alert(
+        data.liked
+          ? "Te gusta esta publicación"
+          : "Ya no te gusta esta publicación"
+      );
+
+      // Notificar al dueño si no es el mismo usuario
+      if (usuarioId !== authorId && data.liked) {
+        await fetch(`${URL_API}/agregar-notificacion`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tipo: "like",
+            idusuario: usuarioId,
+            idpublicacion: publicacionId,
+            mensaje: `${usuarioName} le dio me gusta a tu publicación.`,
+          }),
+        });
+      }
+    } catch (e) {
+      alert("Error al dar like");
+      setLiked(false);
+    }
+  };
+
+  const handleComment = () => {
+    navigation.navigate("Fotocomentarios", {
+      uri: postImage?.uri || null,
+      uriUser: profileImage?.uri || null,
+      publicacion_id: publicacionId,
+      usuario: name,
+      contenido: text,
+      authorId: authorId,
+    });
+  };
+
+  const toggleSave = async () => {
+    if (!usuarioId || !publicacionId) return;
+    try {
+      const res = await fetch(`${URL_API}/guardar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          usuario_id: usuarioId,
+          publicacion_id: publicacionId,
+        }),
+      });
+      const data = await res.json();
+      setSaved(data.saved);
+      alert(data.saved ? "Guardado en favoritos" : "Eliminado de favoritos");
+    } catch (e) {
+      alert("Error al guardar");
+      setSaved(false);
+    }
+  };
 
   return (
     <View style={styles.postContainer}>
@@ -27,23 +122,19 @@ const Post = ({ name, text, profileImage, postImage }) => {
           <Text style={styles.postText}>{text}</Text>
         </View>
       </View>
-      <Image source={postImage} style={styles.postImage} />
+      <TouchableOpacity onPress={handleComment}>
+        <Image source={postImage} style={styles.postImage} />
+      </TouchableOpacity>
       <View style={styles.actions}>
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => setLiked(!liked)}
-        >
+        <TouchableOpacity style={styles.actionButton} onPress={toggleLike}>
           <Icon name="heart" size={20} color={liked ? "red" : "white"} />
           <Text style={styles.actionText}>Me gusta</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity onPress={handleComment} style={styles.actionButton}>
           <Icon name="comment" size={20} color="white" />
           <Text style={styles.actionText}>Comentar</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => setSaved(!saved)}
-        >
+        <TouchableOpacity style={styles.actionButton} onPress={toggleSave}>
           <Icon name="bookmark" size={20} color={saved ? "#888" : "white"} />
           <Text style={styles.actionText}>Guardar</Text>
         </TouchableOpacity>
@@ -70,17 +161,6 @@ const Navbar = () => {
     <View style={styles.navbarContainer}>
       <View style={styles.topBar}>
         <Text style={styles.logo}>More</Text>
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Chats")}
-          title="boton"
-        >
-          <Icon
-            name="comment"
-            size={24}
-            color="white"
-            style={styles.chatIcon}
-          />
-        </TouchableOpacity>
       </View>
       <View style={styles.navbar}>
         <TouchableOpacity>
@@ -125,24 +205,61 @@ const Navbar = () => {
 };
 
 const App = () => {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState(null);
+
+  useEffect(() => {
+    const fetchUserIdAndPosts = async () => {
+      try {
+        const storedUserId = await AsyncStorage.getItem("userId");
+        setUserId(storedUserId);
+
+        const response = await fetch(`${URL_API}/todaslaspublicaciones`);
+        const data = await response.json();
+        setPosts(data);
+      } catch (error) {
+        console.error("Error al obtener publicaciones:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUserIdAndPosts();
+  }, []);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#000" />
       <View style={styles.container}>
         <Navbar />
         <ScrollView>
-          <Post
-            name="Daniel Sanchez"
-            text="Mi anime favorito ❤️"
-            profileImage={require("../assets/imagen/WhatsApp Image 2025-03-02 at 7.39.09 PM.jpeg")}
-            postImage={require("../assets/imagen/WhatsApp Image 2025-03-02 at 7.39.09 PM.jpeg")}
-          />
-          <Post
-            name="Roussell Duran"
-            text="Mi momento favorito del día"
-            profileImage={require("../assets/imagen/rousse.jpeg")}
-            postImage={require("../assets/imagen/rousse.jpeg")}
-          />
+          {loading ? (
+            <Text
+              style={{ color: "white", textAlign: "center", marginTop: 20 }}
+            >
+              Cargando publicaciones...
+            </Text>
+          ) : (
+            posts.map((post) => (
+                <Post
+                  key={post.id}
+                  name={post.usuario}
+                  text={post.description}
+                  publicacionId={post.id}
+                  authorId={post.usuario_id}
+                  profileImage={
+                    post.foto_perfil
+                      ? { uri: `${URL_API}/avatars/${post.foto_perfil}` }
+                      : null
+                  }
+                  postImage={
+                    post.fotos
+                      ? { uri: `${URL_API}/posts/${post.fotos}` }
+                      : null
+                  }
+                />
+              ))
+          )}
         </ScrollView>
       </View>
     </SafeAreaView>
@@ -157,8 +274,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#000",
-    // Elimina o comenta la línea de paddingTop si usas SafeAreaView
-    // paddingTop: 20,
   },
   navbarContainer: {
     width: "100%",

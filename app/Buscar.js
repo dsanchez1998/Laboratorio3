@@ -14,7 +14,7 @@ import { useNavigation } from "@react-navigation/native";
 import { URL_API } from "@env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const Navbar = () => {
+const Navbar = ({ searchText, setSearchText }) => {
   const navigation = useNavigation();
 
   const [fotoPerfil, setFotoPerfil] = useState(null);
@@ -29,30 +29,16 @@ const Navbar = () => {
 
   const imageUrl = fotoPerfil ? `${URL_API}/avatars/${fotoPerfil}` : null;
 
-  const handleNavPress = (section) => {
-    console.log(`Navegando a ${section}`);
-  };
-
-  const handleChatPress = () => {
-    console.log("Abrir mensajes");
-  };
-
   return (
     <View style={styles.navbarContainer}>
       <View style={styles.topBar}>
         <TextInput
-          placeholder="Search"
+          placeholder="Buscar"
           placeholderTextColor="#888"
           style={styles.searchBox}
+          value={searchText}
+          onChangeText={setSearchText}
         />
-        <TouchableOpacity onPress={() => navigation.navigate("Chats")}>
-          <Icon
-            name="comment"
-            size={24}
-            color="white"
-            style={styles.chatIcon}
-          />
-        </TouchableOpacity>
       </View>
       <View style={styles.navbar}>
         <TouchableOpacity onPress={() => navigation.navigate("Inicio")}>
@@ -85,66 +71,122 @@ const Navbar = () => {
   );
 };
 
-const Categories = () => {
-  return (
-    <View style={styles.categories}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {["Anime", "Comida", "Gym", "Viajes"].map((cat, index) => (
-          <TouchableOpacity key={index} style={styles.categoryItem}>
-            <Text style={styles.categoryText}>{cat}</Text>
+const CATEGORY_LIST = ["Anime", "Comida", "Gym", "Viajes"];
+
+const Categories = ({ selected, onSelect }) => (
+  <View style={styles.categories}>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <TouchableOpacity
+        style={[
+          styles.categoryItem,
+          !selected && { backgroundColor: "#3498db" },
+        ]}
+        onPress={() => onSelect(null)}
+      >
+        <Text style={styles.categoryText}>Todas</Text>
+      </TouchableOpacity>
+      {CATEGORY_LIST.map((cat, index) => (
+        <TouchableOpacity
+          key={index}
+          style={[
+            styles.categoryItem,
+            selected === cat && { backgroundColor: "#3498db" },
+          ]}
+          onPress={() => onSelect(cat)}
+        >
+          <Text style={styles.categoryText}>{cat}</Text>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  </View>
+);
+
+const Gallery = ({ publicaciones, onImagePress }) => (
+  <ScrollView style={styles.gallery}>
+    <View style={styles.imageGrid}>
+      {publicaciones.map((pub, index) => (
+        <View
+          key={pub.id}
+          style={index === 9 ? styles.largeImageWrapper : styles.imageWrapper}
+        >
+          <TouchableOpacity onPress={() => onImagePress(pub)}>
+            <Image
+              source={{ uri: `${URL_API}/posts/${pub.fotos}` }}
+              style={index === 9 ? styles.largeImage : styles.image}
+            />
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+        </View>
+      ))}
     </View>
-  );
-};
+  </ScrollView>
+);
 
-const Gallery = () => {
+const App = () => {
   const navigation = useNavigation();
-  const imageUris = [
-    require("../assets/imagen/WhatsApp Image 2025-03-03 at 5.33.56 PM.jpeg"),
-    require("../assets/imagen/GEThHg_bwAAdeR1.jpg"),
-    require("../assets/imagen/3af3aba6a0ecec50f9dbd62f5684da4f.jpg"),
-    require("../assets/imagen/WhatsApp Image 2025-03-03 at 5.32.18 PM.jpeg"),
-    require("../assets/imagen/Kenjaku-is-the-Aizen-of-Jujutsu-Kaisen-Unavoidable-future-looming-near-5.webp"),
-    require("../assets/imagen/Mre.png"),
-    require("../assets/imagen/WhatsApp Image 2025-03-03 at 5.33.56 PM.jpeg"),
-    require("../assets/imagen/a-spectacular-gaming-adventure-with-this-stunning-4k-wallpaper-free-photo.jpg"),
-    require("../assets/imagen/WhatsApp Image 2025-03-03 at 5.33.12 PM.jpeg"),
-    require("../assets/imagen/WhatsApp Image 2025-03-02 at 7.41.38 PM.jpeg"), // Imagen grande
-  ];
+  const [publicaciones, setPublicaciones] = useState([]);
+  const [categoria, setCategoria] = useState(null);
+  const [searchText, setSearchText] = useState("");
 
-  const handleImagePress = (imgUri) => {
-    navigation.navigate("Fotocomentarios", { uri: imgUri });
+  useEffect(() => {
+    const cargarImagenes = async () => {
+      try {
+        const response = await fetch(`${URL_API}/todaslaspublicaciones`);
+        const data = await response.json();
+        setPublicaciones(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Error al cargar imagenes de publicacion:", error);
+        setPublicaciones([]);
+      }
+    };
+
+    cargarImagenes();
+  }, []);
+
+  // Filtrado por categoría y búsqueda
+  const publicacionesFiltradas = publicaciones.filter((p) => {
+    // Si hay categoría seleccionada, filtra solo por categoría
+    if (categoria) {
+      return (p.etiquetas || "")
+        .toLowerCase()
+        .split(",")
+        .map((e) => e.trim())
+        .includes(categoria.toLowerCase());
+    }
+    // Si no hay categoría, filtra por búsqueda si hay texto
+    if (searchText.trim() !== "") {
+      const texto = searchText.toLowerCase();
+      const usuario = (p.usuario || "").toLowerCase();
+      const etiquetas = (p.etiquetas || "").toLowerCase();
+      const contenido = (p.description || "").toLowerCase();
+      return (
+        usuario.includes(texto) ||
+        etiquetas.includes(texto) ||
+        contenido.includes(texto)
+      );
+    }
+    // Si no hay búsqueda ni categoría, muestra todo
+    return true;
+  });
+
+  const handleImagePress = (pub) => {
+    navigation.navigate("Fotocomentarios", {
+      uri: `${URL_API}/posts/${pub.fotos}`,
+      uriUser: `${URL_API}/avatars/${pub.foto_perfil}`,
+      publicacion_id: pub.id,
+      usuario: pub.usuario,
+      contenido: pub.description,
+      fecha: pub.fecha,
+    });
   };
 
   return (
-    <ScrollView style={styles.gallery}>
-      <View style={styles.imageGrid}>
-        {imageUris.map((uri, index) => (
-          <View
-            key={index}
-            style={index === 9 ? styles.largeImageWrapper : styles.imageWrapper}
-          >
-            <TouchableOpacity onPress={() => handleImagePress(uri)}>
-              <Image
-                source={uri}
-                style={index === 9 ? styles.largeImage : styles.image}
-              />
-            </TouchableOpacity>
-          </View>
-        ))}
-      </View>
-    </ScrollView>
-  );
-};
-
-const App = () => {
-  return (
     <SafeAreaView style={styles.container}>
-      <Navbar />
-      <Categories />
-      <Gallery />
+      <Navbar searchText={searchText} setSearchText={setSearchText} />
+      <Categories selected={categoria} onSelect={setCategoria} />
+      <Gallery
+        publicaciones={publicacionesFiltradas}
+        onImagePress={handleImagePress}
+      />
     </SafeAreaView>
   );
 };
