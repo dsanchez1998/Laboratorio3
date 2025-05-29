@@ -45,8 +45,9 @@ const CambiarContrasenaScreen = ({ navigation }) => {
         <Text style={styles.title}>Cambiar contraseña</Text>
 
         <View style={styles.box}>
+
           <TextInput
-            placeholder="Contraseña"
+            placeholder="Ingresa contraseña actual"
             placeholderTextColor="#999"
             style={styles.input}
             secureTextEntry
@@ -55,7 +56,16 @@ const CambiarContrasenaScreen = ({ navigation }) => {
           />
 
           <TextInput
-            placeholder="Repetir contraseña"
+            placeholder="Nueva Contraseña"
+            placeholderTextColor="#999"
+            style={styles.input}
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+
+          <TextInput
+            placeholder="Repetir contraseña nueva"
             placeholderTextColor="#999"
             style={styles.input}
             secureTextEntry
@@ -63,9 +73,7 @@ const CambiarContrasenaScreen = ({ navigation }) => {
             onChangeText={setRepeatPassword}
           />
 
-          <TouchableOpacity onPress={() => navigation.navigate("Olvidarcontraseña")}>
-            <Text style={styles.link}>¿Olvidó su contraseña?</Text>
-          </TouchableOpacity>
+          
         </View>
 
         <TouchableOpacity style={styles.button} onPress={handleGuardarCambios}>
