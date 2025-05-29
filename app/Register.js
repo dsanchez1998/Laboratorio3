@@ -8,8 +8,10 @@ import {
   ScrollView,
   SafeAreaView,
   StatusBar,
+  TouchableOpacity
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from '@expo/vector-icons'; 
 import Button from "../components/Button";
 import Input from "../components/Input";
 import { styled } from "nativewind";
@@ -30,6 +32,8 @@ export default function Register() {
   const [isChecked, setChecked] = useState(false);
   const [apellido, setApellido] = useState("");
   const [quotes, setQuotes] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleRegister = async () => {
     if (
@@ -202,18 +206,35 @@ export default function Register() {
               secureTextEntry
             />
 
-            <Input
-              placeholder="Ingrese su contraseña"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
-            <Input
-              placeholder="Repite la contraseña"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry
-            />
+            <View style={{ position: 'relative', width: '100%' }}>
+              <Input
+                placeholder="Ingrese su contraseña"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+              />
+              <TouchableOpacity
+                style={{ position: 'absolute', right: 10, top: 15 }}
+                onPress={() => setShowPassword(!showPassword)}
+              >
+                <Ionicons name={showPassword ? "eye-off" : "eye"} size={24} color="gray" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={{ position: 'relative', width: '100%' }}>
+              <Input
+                placeholder="Repite la contraseña"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry={!showConfirmPassword}
+              />
+              <TouchableOpacity
+                style={{ position: 'absolute', right: 10, top: 15 }}
+                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                <Ionicons name={showConfirmPassword ? "eye-off" : "eye"} size={24} color="gray" />
+              </TouchableOpacity>
+            </View>
 
             <Button text="Crear usuario" onPress={handleRegister} />
 

@@ -34,7 +34,6 @@ export default function AppNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Start" component={Start} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="recoverPassword" component={RecoverPassword} />
         <Stack.Screen name="NewPassword" component={NewPassword} />

@@ -34,6 +34,13 @@ const server = http.createServer(async (req, res) => {
 
   /*ENDPOINTS*/
 
+ if (req.url === "/api" && req.method === "GET") {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("Hello, Sophia!");
+    return;
+  }
+
+
   if (req.url === "/publicar" && req.method === "POST") {
     const form = new formidable.IncomingForm();
     const postsDir = path.join(__dirname, "posts");
@@ -1056,7 +1063,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-
-server.listen(PORT, () => {
+server.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
+

@@ -1,13 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, ImageBackground, Image } from "react-native";
+import { View, Text, ImageBackground, Image, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import { styled } from "nativewind";
-import Checkbox from "expo-checkbox";
 import { URL_API } from "@env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { Ionicons } from '@expo/vector-icons'; 
 const StyledView = styled(View);
 const StyledText = styled(Text);
 
@@ -15,7 +14,8 @@ export default function Login() {
   const navigation = useNavigation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isChecked, setChecked] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleLogin = async () => {
     try {
@@ -77,12 +77,22 @@ export default function Login() {
           onChangeText={setEmail}
           keyboardType="email-address"
         />
-        <Input
-          placeholder="Ingrese tu contraseña"
+         <View style={{ position: 'relative', width: '100%' }}>
+          <Input
+          placeholder="Ingrese su contraseña"
           value={password}
           onChangeText={setPassword}
-          secureTextEntry
-        />
+          secureTextEntry={!showPassword}
+          />
+          <TouchableOpacity
+          style={{ position: 'absolute', right: 10, top: 15 }}
+          onPress={() => setShowPassword(!showPassword)}
+          >
+          <Ionicons name={showPassword ? "eye-off" : "eye"} size={24} color="gray" />
+          </TouchableOpacity>
+          </View>
+                        
+                    
         <StyledView className="flex-row w-full items-end justify-end">
           <StyledText
             onPress={() => navigation.navigate("recoverPassword")}
